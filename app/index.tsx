@@ -1,60 +1,49 @@
-import { FC, useState } from "react";
-import { Pressable, View } from "react-native";
+import React, { useState } from 'react';
+import { View, Text, Alert } from 'react-native';
+import { Grid as GridType } from './types/Game';
+import { createGrid, revealCell } from './util/gameLogic';
+import Grid from './components/Grid';
+import RestartButton from './components/RestartButton';
 
-export default function Index() {
-  const tab = new Array(20).fill(0).map(() => new Array(20).fill(0));
-  const [state, setState] = useState(tab);
+const GameScreen: React.FC = () => {
+  const [grid, setGrid] = useState<GridType>(createGrid());
+  const [gameOver, setGameOver] = useState(false);
 
-  const handlePress = (index1: number, index2: number, value: number) => {
-    let newTab = state.slice();
-    newTab[index1][index2] = value === 1 ? 0 : 1;
-    setState(newTab);
-  }
+  const handleCellPress = (x: number, y: number) => {
+    const newGrid = revealCell(grid, x, y);
+    
+    if (newGrid[x][y].isBomb) {
+      setGameOver(true);
+      Alert.alert('Game Over', 'Vous avez cliqué sur une bombe !');
+      return;
+    }
+
+    setGrid([...newGrid]);
+  };
+
+  const handleRestart = () => {
+    setGrid(createGrid());
+    setGameOver(false);
+  };
 
   return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      {
-        state.map((t, index1) =>
-          <View style={
-            {
-              display: 'flex',
-              flexDirection: "row",
-            }
-          }>
-            {
-              t.map((value, index2) =>
-                <Box index1={index1} index2={index2} value={value} handlePress={handlePress} />
-              )
-            }
-          </View>
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+      <Text style={{ fontSize: 24, marginBottom: 20 }}>Démineur</Text>
+      
+      <Grid
+        grid={grid}
+        onCellPress={handleCellPress}
+        gameOver={gameOver}
+      />
 
-        )
-      }
+      {gameOver && (
+        <View style={{ alignItems: 'center' }}>
+          <Text style={{ color: 'red', marginTop: 20 }}>Game Over!</Text>
+          <RestartButton onPress={handleRestart} />
+        </View>
+      )}
     </View>
   );
-}
+};
 
-type BoxProps = {
-  index1: number,
-  index2: number,
-  value: 0 | 1,
-  handlePress: (index1: number, index2: number,
-    value: 0 | 1) => void
-}
-const Box: FC<BoxProps> = ({ index1, index2, value, handlePress }) => (
-  <Pressable
-    onPress={() => handlePress(index1, index2, value)}
-    style={{
-      width: 20,
-      height: 20,
-      backgroundColor: value === 1 ? "grey" : "red",
-
-    }}>
-  </Pressable>
-);
+export default GameScreen;
