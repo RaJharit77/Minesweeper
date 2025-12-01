@@ -11,7 +11,7 @@ const GameScreen: React.FC = () => {
 
   const handleCellPress = (x: number, y: number) => {
     const newGrid = revealCell(grid, x, y);
-    
+
     if (newGrid[x][y].isBomb) {
       setGameOver(true);
       Alert.alert('Game Over', 'Vous avez cliqué sur une bombe !');
@@ -28,8 +28,8 @@ const GameScreen: React.FC = () => {
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-      <Text style={{ fontSize: 24, marginBottom: 20 }}>Démineur</Text>
-      
+      <Text style={{ fontSize: 24, marginBottom: 20 }}>Minesweeper</Text>
+
       <Grid
         grid={grid}
         onCellPress={handleCellPress}
