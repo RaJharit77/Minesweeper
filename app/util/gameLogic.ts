@@ -1,4 +1,4 @@
-import { Cell, Grid } from '../types/Game';
+import { Grid } from '../types/Game';
 import { GRID_SIZE, BOMBS_COUNT } from '../constants/Game';
 
 export const createGrid = (): Grid => {
