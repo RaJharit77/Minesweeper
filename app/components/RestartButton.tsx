@@ -1,9 +1,6 @@
 import React from 'react';
 import { TouchableOpacity, Text } from 'react-native';
-
-interface RestartButtonProps {
-    onPress: () => void;
-}
+import { RestartButtonProps } from '../types/interfaces/RestartButtonProps';
 
 const RestartButton: React.FC<RestartButtonProps> = ({ onPress }) => {
     return (

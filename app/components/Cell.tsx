@@ -1,13 +1,7 @@
 import React from 'react';
 import { TouchableOpacity, Text, Image } from 'react-native';
-import { Cell as CellType } from '../types/Game';
 import { NUMBER_COLORS, CELL_SIZE } from '../constants/Game';
-
-interface CellProps {
-    cell: CellType;
-    onPress: () => void;
-    gameOver: boolean;
-}
+import { CellProps } from '../types/interfaces/CellProps';
 
 const Cell: React.FC<CellProps> = ({ cell, onPress, gameOver }) => {
     const getCellContent = () => {

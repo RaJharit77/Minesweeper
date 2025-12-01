@@ -1,14 +1,8 @@
 import React from 'react';
 import { View } from 'react-native';
-import { Grid as GridType } from '../types/Game';
 import Cell from './Cell';
 import { GRID_SIZE, CELL_SIZE } from '../constants/Game';
-
-interface GridProps {
-    grid: GridType;
-    onCellPress: (x: number, y: number) => void;
-    gameOver: boolean;
-}
+import { GridProps } from '../types/interfaces/GridProps';
 
 const Grid: React.FC<GridProps> = ({ grid, onCellPress, gameOver }) => {
     return (
