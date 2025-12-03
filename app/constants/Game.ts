@@ -1,6 +1,6 @@
 export const GRID_SIZE = 20;
 export const BOMBS_COUNT = 40;
-export const CELL_SIZE = 15;
+export const CELL_SIZE = 18;
 
 export const NUMBER_COLORS = {
     1: "#00A2FF",
