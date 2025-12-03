@@ -12,7 +12,7 @@ const Cell: React.FC<CellProps> = ({ cell, onPress, gameOver }) => {
         if (cell.isBomb) {
             return (
                 <Image
-                    source={require('../assets/bomb.png')}
+                    source={require('../../assets/images/bomb.png')}
                     style={{ width: CELL_SIZE, height: CELL_SIZE }}
                 />
             );
