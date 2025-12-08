@@ -1,6 +1,32 @@
-export const GRID_SIZE = 20;
-export const BOMBS_COUNT = 40;
-export const CELL_SIZE = 18;
+import { Level } from '../store/useSettingsStore';
+
+export type LevelConfig = {
+    GRID_SIZE: number;
+    BOMBS_COUNT: number;
+    CELL_SIZE: number;
+};
+
+export const LEVEL_CONFIGS: Record<Level, LevelConfig> = {
+    Easy: {
+        GRID_SIZE: 10,
+        BOMBS_COUNT: 20,
+        CELL_SIZE: 28,
+    },
+    Medium: {
+        GRID_SIZE: 20,
+        BOMBS_COUNT: 40,
+        CELL_SIZE: 18,
+    },
+    Difficult: {
+        GRID_SIZE: 30,
+        BOMBS_COUNT: 60,
+        CELL_SIZE: 12,
+    },
+};
+
+export const getLevelConfig = (level: Level): LevelConfig => {
+    return LEVEL_CONFIGS[level];
+};
 
 export const NUMBER_COLORS = {
     1: "#00A2FF",
