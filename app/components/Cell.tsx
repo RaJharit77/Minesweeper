@@ -1,9 +1,9 @@
 import React from 'react';
 import { TouchableOpacity, Text, Image } from 'react-native';
-import { NUMBER_COLORS, CELL_SIZE } from '../constants/Game';
+import { NUMBER_COLORS } from '../constants/Game';
 import { CellProps } from '../types/interfaces/CellProps';
 
-const Cell: React.FC<CellProps> = ({ cell, onPress, gameOver }) => {
+const Cell: React.FC<CellProps> = ({ cell, onPress, gameOver, cellSize }) => {
     const getCellContent = () => {
         if (!cell.isRevealed && !gameOver) {
             return null;
@@ -13,14 +13,18 @@ const Cell: React.FC<CellProps> = ({ cell, onPress, gameOver }) => {
             return (
                 <Image
                     source={require('../../assets/images/bomb.png')}
-                    style={{ width: CELL_SIZE, height: CELL_SIZE }}
+                    style={{ width: cellSize, height: cellSize }}
                 />
             );
         }
 
         if (cell.adjacentBombs > 0) {
             return (
-                <Text style={{ color: NUMBER_COLORS[cell.adjacentBombs as keyof typeof NUMBER_COLORS], fontWeight: 'bold' }}>
+                <Text style={{
+                    color: NUMBER_COLORS[cell.adjacentBombs as keyof typeof NUMBER_COLORS],
+                    fontWeight: 'bold',
+                    fontSize: cellSize * 0.6
+                }}>
                     {cell.adjacentBombs}
                 </Text>
             );
@@ -34,8 +38,8 @@ const Cell: React.FC<CellProps> = ({ cell, onPress, gameOver }) => {
             onPress={onPress}
             disabled={cell.isRevealed || gameOver}
             style={{
-                width: CELL_SIZE,
-                height: CELL_SIZE,
+                width: cellSize,
+                height: cellSize,
                 backgroundColor: cell.isRevealed || gameOver ? '#858889' : '#1bb5fc',
                 justifyContent: 'center',
                 alignItems: 'center',
