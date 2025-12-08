@@ -4,4 +4,5 @@ export interface CellProps {
     cell: CellType;
     onPress: () => void;
     gameOver: boolean;
+    cellSize: number;
 }
