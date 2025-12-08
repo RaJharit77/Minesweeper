@@ -1,7 +1,6 @@
 import { Grid } from '../types/Game';
-import { GRID_SIZE, BOMBS_COUNT } from '../constants/Game';
 
-export const createGrid = (): Grid => {
+export const createGrid = (GRID_SIZE: number, BOMBS_COUNT: number): Grid => {
     const grid: Grid = Array(GRID_SIZE).fill(null).map((_, x) =>
         Array(GRID_SIZE).fill(null).map((_, y) => ({
             isBomb: false,
@@ -44,8 +43,8 @@ export const createGrid = (): Grid => {
     return grid;
 };
 
-export const revealCell = (grid: Grid, x: number, y: number): Grid => {
-    const newGrid = [...grid];
+export const revealCell = (grid: Grid, x: number, y: number, GRID_SIZE: number): Grid => {
+    const newGrid = [...grid.map(row => [...row])];
     const cell = newGrid[x][y];
 
     if (cell.isRevealed) return newGrid;
@@ -58,7 +57,7 @@ export const revealCell = (grid: Grid, x: number, y: number): Grid => {
                 const nx = x + dx;
                 const ny = y + dy;
                 if (nx >= 0 && nx < GRID_SIZE && ny >= 0 && ny < GRID_SIZE) {
-                    revealCell(newGrid, nx, ny);
+                    revealCell(newGrid, nx, ny, GRID_SIZE);
                 }
             }
         }
