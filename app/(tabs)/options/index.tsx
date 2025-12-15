@@ -6,12 +6,12 @@ import {
     TouchableOpacity,
     ScrollView,
     Alert,
+    Vibration,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import Slider from '@react-native-community/slider';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
-import * as Haptics from 'expo-haptics';
 import { Audio } from 'expo-av';
 import { useGameStore, Level } from '../../store/useSettingsStore';
 import { LEVEL_CONFIGS } from '../../constants/Game';
@@ -47,19 +47,40 @@ export default function OptionsScreen() {
                 await sound.unloadAsync();
             }
             const { sound: newSound } = await Audio.Sound.createAsync(
-                require('../../assets/sounds/click.mp3'),
+                require('../../../assets/sounds/game_over.mp3'),
                 { volume: localVolume }
             );
             setSound(newSound);
             await newSound.playAsync();
+
+            // Arrêter le son après 2 secondes
+            setTimeout(async () => {
+                try {
+                    await newSound.stopAsync();
+                    await newSound.unloadAsync();
+                } catch (error) {
+                    console.log('Error stopping sound:', error);
+                }
+            }, 2000);
         } catch (error) {
             console.log('Error playing sound:', error);
+            Alert.alert('Erreur', 'Impossible de jouer le son');
         }
     };
 
-    const testVibration = async () => {
+    const testVibration = () => {
         if (localVibration) {
-            await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+            try {
+                console.log('Testing vibration on Android...');
+                // Vibration simple de 500ms
+                Vibration.vibrate(500);
+                console.log('Vibration test successful');
+            } catch (error) {
+                console.error('Error testing vibration:', error);
+                Alert.alert('Erreur', 'Les vibrations ne sont pas disponibles sur cet appareil');
+            }
+        } else {
+            Alert.alert('Info', 'Veuillez activer les vibrations d\'abord');
         }
     };
 
@@ -73,7 +94,8 @@ export default function OptionsScreen() {
         Alert.alert('Succès', 'Paramètres sauvegardés avec succès!');
 
         if (localVibration) {
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            // Vibration de succès
+            Vibration.vibrate([0, 100, 50, 100]);
         }
     };
 
@@ -110,7 +132,6 @@ export default function OptionsScreen() {
             </View>
 
             <ScrollView contentContainerStyle={styles.content}>
-                {/* Section Volume */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>
                         <Ionicons name="volume-high" size={20} color="#1bb5fc" /> Volume
@@ -162,12 +183,11 @@ export default function OptionsScreen() {
                         onPress={playTestSound}
                     >
                         <Text style={styles.testButtonText}>
-                            <Ionicons name="play" size={16} color="white" /> Tester le son
+                            <Ionicons name="play" size={16} color="white" /> Tester le son (2s)
                         </Text>
                     </TouchableOpacity>
                 </View>
 
-                {/* Section Vibration */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>
                         <Ionicons name="phone-portrait" size={20} color="#1bb5fc" /> Vibration
@@ -213,7 +233,6 @@ export default function OptionsScreen() {
                     </View>
                 </View>
 
-                {/* Section Niveau */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>
                         <Ionicons name="bar-chart" size={20} color="#1bb5fc" /> Niveau de difficulté
@@ -226,9 +245,9 @@ export default function OptionsScreen() {
                             style={styles.picker}
                             dropdownIconColor="#1bb5fc"
                         >
-                            <Picker.Item label="Facile (10×10, 20 bombes)" value="facile" />
+                            <Picker.Item label="Facile (10×10, 20 bombes)" value="easy" />
                             <Picker.Item label="Medium (20×20, 40 bombes)" value="medium" />
-                            <Picker.Item label="Difficile (30×30, 60 bombes)" value="difficle" />
+                            <Picker.Item label="Difficile (30×30, 60 bombes)" value="difficult" />
                         </Picker>
                     </View>
 
@@ -245,7 +264,6 @@ export default function OptionsScreen() {
                     </View>
                 </View>
 
-                {/* Boutons d'action */}
                 <View style={styles.actionButtons}>
                     <TouchableOpacity
                         style={[styles.actionButton, styles.cancelButton]}

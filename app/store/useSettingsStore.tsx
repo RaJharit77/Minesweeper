@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type Level = 'Easy' | 'Medium' | 'Difficult';
+export type Level = 'easy' | 'medium' | 'difficult';
 
 interface GameSettings {
     volume: number;
@@ -18,7 +18,7 @@ interface GameStore extends GameSettings {
 export const useGameStore = create<GameStore>((set) => ({
     volume: 0.5,
     isVibrationEnabled: true,
-    level: 'Medium',
+    level: 'medium',
 
     setVolume: (volume) => set({ volume }),
 

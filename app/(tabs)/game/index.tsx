@@ -1,7 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, Alert, StyleSheet, ScrollView, Dimensions, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import {
+    View,
+    Text,
+    Alert,
+    StyleSheet,
+    ScrollView,
+    Dimensions,
+    TouchableOpacity,
+    Vibration
+} from 'react-native';
 import { useRouter } from 'expo-router';
-import * as Haptics from 'expo-haptics';
+import { Audio } from 'expo-av';
 import { Grid as GridType } from '../../types/Game';
 import { createGrid, revealCell } from '../../util/gameLogic';
 import Grid from '../../components/Grid';
@@ -23,6 +32,46 @@ const GameScreen: React.FC = () => {
     const [gameOver, setGameOver] = useState(false);
     const [zoom, setZoom] = useState(1);
     const [showZoomControls, setShowZoomControls] = useState(false);
+    const soundRef = useRef<Audio.Sound | null>(null);
+
+    const playGameOverSound = async () => {
+        try {
+            if (soundRef.current) {
+                await soundRef.current.stopAsync();
+                await soundRef.current.unloadAsync();
+                soundRef.current = null;
+            }
+
+            console.log('Playing game over sound...');
+            const { sound: newSound } = await Audio.Sound.createAsync(
+                require('../../../assets/sounds/game_over.mp3'),
+                {
+                    shouldPlay: true,
+                    volume: 0.7
+                }
+            );
+
+            soundRef.current = newSound;
+            await newSound.playAsync();
+            console.log('Game over sound played successfully');
+
+        } catch (error) {
+            console.error('Error playing game over sound:', error);
+        }
+    };
+
+    const stopGameOverSound = async () => {
+        try {
+            if (soundRef.current) {
+                await soundRef.current.stopAsync();
+                await soundRef.current.unloadAsync();
+                soundRef.current = null;
+                console.log('Game over sound stopped');
+            }
+        } catch (error) {
+            console.error('Error stopping game over sound:', error);
+        }
+    };
 
     useEffect(() => {
         const gridSize = levelConfig.GRID_SIZE * levelConfig.CELL_SIZE;
@@ -36,14 +85,24 @@ const GameScreen: React.FC = () => {
         }
     }, [levelConfig]);
 
-    const handleCellPress = (x: number, y: number) => {
+    const handleCellPress = async (x: number, y: number) => {
         const newGrid = revealCell(grid, x, y, levelConfig.GRID_SIZE);
 
         if (newGrid[x][y].isBomb) {
             setGameOver(true);
+
+            await playGameOverSound();
+
             if (isVibrationEnabled) {
-                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+                try {
+                    console.log('Triggering vibration...');
+                    Vibration.vibrate([0, 1000, 200, 500, 200, 1000]);
+                    console.log('Vibration triggered successfully');
+                } catch (error) {
+                    console.log('Erreur de vibration:', error);
+                }
             }
+
             Alert.alert('Game Over', 'Vous avez cliqué sur une bombe !');
             return;
         }
@@ -51,7 +110,9 @@ const GameScreen: React.FC = () => {
         setGrid([...newGrid]);
     };
 
-    const handleRestart = () => {
+    const handleRestart = async () => {
+        await stopGameOverSound();
+
         setGrid(createGrid(levelConfig.GRID_SIZE, levelConfig.BOMBS_COUNT));
         setGameOver(false);
     };
@@ -67,6 +128,12 @@ const GameScreen: React.FC = () => {
     const resetZoom = () => {
         setZoom(1);
     };
+
+    useEffect(() => {
+        return () => {
+            stopGameOverSound();
+        };
+    }, []);
 
     return (
         <View style={styles.container}>
@@ -142,13 +209,26 @@ const GameScreen: React.FC = () => {
             <View style={styles.footer}>
                 {gameOver && (
                     <View style={styles.gameOverContainer}>
-                        <Text style={styles.gameOverText}>Game Over!</Text>
+                        <Text style={styles.gameOverText}>💣 Game Over! 💣</Text>
+                        <TouchableOpacity
+                            style={styles.stopSoundButton}
+                            onPress={stopGameOverSound}
+                        >
+                            <Ionicons name="stop-circle" size={20} color="white" />
+                            <Text style={styles.stopSoundButtonText}>Arrêter le son</Text>
+                        </TouchableOpacity>
                         <RestartButton onPress={handleRestart} />
                     </View>
                 )}
 
                 {!gameOver && (
-                    <RestartButton onPress={handleRestart} />
+                    <TouchableOpacity
+                        style={styles.restartButton}
+                        onPress={handleRestart}
+                    >
+                        <Ionicons name="refresh" size={20} color="white" />
+                        <Text style={styles.restartButtonText}>Recommencer</Text>
+                    </TouchableOpacity>
                 )}
             </View>
         </View>
@@ -226,12 +306,47 @@ const styles = StyleSheet.create({
     gameOverContainer: {
         alignItems: 'center',
         marginBottom: 20,
+        width: '100%',
     },
     gameOverText: {
         color: 'red',
         fontSize: 24,
         fontWeight: 'bold',
         marginBottom: 20,
+    },
+    stopSoundButton: {
+        backgroundColor: '#FF3B3B',
+        padding: 10,
+        borderRadius: 5,
+        marginBottom: 15,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minWidth: 200,
+    },
+    stopSoundButtonText: {
+        color: 'white',
+        textAlign: 'center',
+        marginLeft: 10,
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    restartButton: {
+        backgroundColor: '#1bb5fc',
+        padding: 15,
+        borderRadius: 5,
+        marginTop: 20,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minWidth: 200,
+    },
+    restartButtonText: {
+        color: 'white',
+        textAlign: 'center',
+        marginLeft: 10,
+        fontSize: 16,
+        fontWeight: 'bold',
     },
 });
 

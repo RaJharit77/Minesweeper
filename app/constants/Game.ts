@@ -7,17 +7,17 @@ export type LevelConfig = {
 };
 
 export const LEVEL_CONFIGS: Record<Level, LevelConfig> = {
-    Easy: {
+    easy: {
         GRID_SIZE: 10,
         BOMBS_COUNT: 20,
         CELL_SIZE: 28,
     },
-    Medium: {
+    medium: {
         GRID_SIZE: 20,
         BOMBS_COUNT: 40,
         CELL_SIZE: 18,
     },
-    Difficult: {
+    difficult: {
         GRID_SIZE: 30,
         BOMBS_COUNT: 60,
         CELL_SIZE: 12,

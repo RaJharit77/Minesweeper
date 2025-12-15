@@ -1,46 +1,10 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Audio } from 'expo-av';
-import { useGameStore } from '../../store/useSettingsStore';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function MenuScreen() {
     const router = useRouter();
-    const { volume } = useGameStore();
-    const [sound, setSound] = React.useState<Audio.Sound>();
-
-    useEffect(() => {
-        const loadSound = async () => {
-            try {
-                const { sound: newSound } = await Audio.Sound.createAsync(
-                    require('../../assets/sounds/background.mp3'),
-                    {
-                        volume,
-                        isLooping: true,
-                        shouldPlay: true
-                    }
-                );
-                setSound(newSound);
-            } catch (error) {
-                console.log('Error loading sound:', error);
-            }
-        };
-
-        loadSound();
-
-        return () => {
-            if (sound) {
-                sound.unloadAsync();
-            }
-        };
-    }, []);
-
-    useEffect(() => {
-        if (sound) {
-            sound.setVolumeAsync(volume);
-        }
-    }, [volume, sound]);
 
     return (
         <View style={styles.container}>
