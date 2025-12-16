@@ -18,6 +18,7 @@ import RestartButton from '../../components/RestartButton';
 import { useGameStore } from '../../store/useSettingsStore';
 import { getLevelConfig } from '../../constants/Game';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -96,14 +97,23 @@ const GameScreen: React.FC = () => {
             if (isVibrationEnabled) {
                 try {
                     console.log('Triggering vibration...');
-                    Vibration.vibrate([0, 1000, 200, 500, 200, 1000]);
+                    await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
                     console.log('Vibration triggered successfully');
                 } catch (error) {
                     console.log('Erreur de vibration:', error);
                 }
             }
 
-            Alert.alert('Game Over', 'Vous avez cliqué sur une bombe !');
+            Alert.alert(
+                'Game Over',
+                'Vous avez cliqué sur une bombe !',
+                [
+                    {
+                        text: 'OK',
+                        onPress: () => stopGameOverSound(),
+                    },
+                ]
+            );
             return;
         }
 
@@ -112,7 +122,6 @@ const GameScreen: React.FC = () => {
 
     const handleRestart = async () => {
         await stopGameOverSound();
-
         setGrid(createGrid(levelConfig.GRID_SIZE, levelConfig.BOMBS_COUNT));
         setGameOver(false);
     };
@@ -210,13 +219,6 @@ const GameScreen: React.FC = () => {
                 {gameOver && (
                     <View style={styles.gameOverContainer}>
                         <Text style={styles.gameOverText}>💣 Game Over! 💣</Text>
-                        <TouchableOpacity
-                            style={styles.stopSoundButton}
-                            onPress={stopGameOverSound}
-                        >
-                            <Ionicons name="stop-circle" size={20} color="white" />
-                            <Text style={styles.stopSoundButtonText}>Arrêter le son</Text>
-                        </TouchableOpacity>
                         <RestartButton onPress={handleRestart} />
                     </View>
                 )}
@@ -313,23 +315,6 @@ const styles = StyleSheet.create({
         fontSize: 24,
         fontWeight: 'bold',
         marginBottom: 20,
-    },
-    stopSoundButton: {
-        backgroundColor: '#FF3B3B',
-        padding: 10,
-        borderRadius: 5,
-        marginBottom: 15,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minWidth: 200,
-    },
-    stopSoundButtonText: {
-        color: 'white',
-        textAlign: 'center',
-        marginLeft: 10,
-        fontSize: 16,
-        fontWeight: 'bold',
     },
     restartButton: {
         backgroundColor: '#1bb5fc',

@@ -13,6 +13,7 @@ import Slider from '@react-native-community/slider';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import { Audio } from 'expo-av';
+import * as Haptics from 'expo-haptics';
 import { useGameStore, Level } from '../../store/useSettingsStore';
 import { LEVEL_CONFIGS } from '../../constants/Game';
 
@@ -53,7 +54,6 @@ export default function OptionsScreen() {
             setSound(newSound);
             await newSound.playAsync();
 
-            // Arrêter le son après 2 secondes
             setTimeout(async () => {
                 try {
                     await newSound.stopAsync();
@@ -68,12 +68,11 @@ export default function OptionsScreen() {
         }
     };
 
-    const testVibration = () => {
+    const testVibration = async () => {
         if (localVibration) {
             try {
-                console.log('Testing vibration on Android...');
-                // Vibration simple de 500ms
-                Vibration.vibrate(500);
+                console.log('Testing vibration...');
+                await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                 console.log('Vibration test successful');
             } catch (error) {
                 console.error('Error testing vibration:', error);
@@ -91,10 +90,16 @@ export default function OptionsScreen() {
             level: localLevel,
         });
 
-        Alert.alert('Succès', 'Paramètres sauvegardés avec succès!');
+        Alert.alert('Succès', 'Paramètres sauvegardés avec succès!', [
+            {
+                text: 'OK',
+                onPress: () => {
+                    router.push('/menu');
+                },
+            },
+        ]);
 
         if (localVibration) {
-            // Vibration de succès
             Vibration.vibrate([0, 100, 50, 100]);
         }
     };
