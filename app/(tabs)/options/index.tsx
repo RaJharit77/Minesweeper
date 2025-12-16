@@ -7,13 +7,13 @@ import {
     ScrollView,
     Alert,
     Vibration,
+    Platform
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import Slider from '@react-native-community/slider';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import { Audio } from 'expo-av';
-import * as Haptics from 'expo-haptics';
 import { useGameStore, Level } from '../../store/useSettingsStore';
 import { LEVEL_CONFIGS } from '../../constants/Game';
 
@@ -68,11 +68,17 @@ export default function OptionsScreen() {
         }
     };
 
-    const testVibration = async () => {
+    const testVibration = () => {
         if (localVibration) {
             try {
                 console.log('Testing vibration...');
-                await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
+                if (Platform.OS === 'android') {
+                    Vibration.vibrate([0, 500, 200, 300]);
+                } else {
+                    Vibration.vibrate(500);
+                }
+
                 console.log('Vibration test successful');
             } catch (error) {
                 console.error('Error testing vibration:', error);
@@ -100,7 +106,16 @@ export default function OptionsScreen() {
         ]);
 
         if (localVibration) {
-            Vibration.vibrate([0, 100, 50, 100]);
+            try {
+                // Vibration de succès
+                if (Platform.OS === 'android') {
+                    Vibration.vibrate([0, 100, 50, 100]);
+                } else {
+                    Vibration.vibrate(100);
+                }
+            } catch (error) {
+                console.log('Erreur de vibration lors de la sauvegarde:', error);
+            }
         }
     };
 

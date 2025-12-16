@@ -7,7 +7,8 @@ import {
     ScrollView,
     Dimensions,
     TouchableOpacity,
-    Vibration
+    Vibration,
+    Platform
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Audio } from 'expo-av';
@@ -18,7 +19,6 @@ import RestartButton from '../../components/RestartButton';
 import { useGameStore } from '../../store/useSettingsStore';
 import { getLevelConfig } from '../../constants/Game';
 import { Ionicons } from '@expo/vector-icons';
-import * as Haptics from 'expo-haptics';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -96,8 +96,14 @@ const GameScreen: React.FC = () => {
 
             if (isVibrationEnabled) {
                 try {
-                    console.log('Triggering vibration...');
-                    await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+                    console.log('Triggering vibration on Game Over...');
+                    // Utiliser Vibration au lieu de Haptics pour plus de compatibilité
+                    if (Platform.OS === 'android') {
+                        Vibration.vibrate([0, 500, 200, 500]);
+                    } else {
+                        // Pour iOS, pattern différent
+                        Vibration.vibrate([0, 500]);
+                    }
                     console.log('Vibration triggered successfully');
                 } catch (error) {
                     console.log('Erreur de vibration:', error);
