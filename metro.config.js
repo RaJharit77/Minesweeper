@@ -1,9 +1,15 @@
-const { getDefaultConfig } = require('expo/metro-config');
+const { getDefaultConfig } = require("expo/metro-config");
+const { withNativeWind } = require('nativewind/metro');
 
 const config = getDefaultConfig(__dirname);
 
-config.resolver.assetExts = [
-    ...config.resolver.assetExts,
+const configWithNativeWind = withNativeWind(config, {
+    input: './global.css',
+    inlineRem: 16
+});
+
+configWithNativeWind.resolver.assetExts = [
+    ...configWithNativeWind.resolver.assetExts.filter(ext => ext !== 'svg'),
     'mp3',
     'wav',
     'ogg',
@@ -11,8 +17,8 @@ config.resolver.assetExts = [
     'caf'
 ];
 
-config.resolver.sourceExts = [
-    ...config.resolver.sourceExts,
+configWithNativeWind.resolver.sourceExts = [
+    ...configWithNativeWind.resolver.sourceExts,
     'js',
     'jsx',
     'ts',
@@ -20,4 +26,4 @@ config.resolver.sourceExts = [
     'json'
 ];
 
-module.exports = config;
+module.exports = configWithNativeWind;
