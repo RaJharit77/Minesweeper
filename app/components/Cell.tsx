@@ -14,6 +14,7 @@ const Cell: React.FC<CellProps> = ({ cell, onPress, gameOver, cellSize }) => {
                 <Image
                     source={require('../../assets/images/bomb.png')}
                     style={{ width: cellSize, height: cellSize }}
+                    resizeMode="contain"
                 />
             );
         }
@@ -46,6 +47,7 @@ const Cell: React.FC<CellProps> = ({ cell, onPress, gameOver, cellSize }) => {
                 borderWidth: 1,
                 borderColor: '#fff',
             }}
+            className="justify-center items-center border border-white"
         >
             {getCellContent()}
         </TouchableOpacity>

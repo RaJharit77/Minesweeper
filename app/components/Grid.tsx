@@ -7,11 +7,10 @@ const Grid: React.FC<GridProps> = ({ grid, onCellPress, gameOver, cellSize }) =>
     const gridSize = grid.length;
 
     return (
-        <View style={{
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-            width: gridSize * cellSize
-        }}>
+        <View 
+            className="flex-row flex-wrap"
+            style={{ width: gridSize * cellSize }}
+        >
             {grid.flat().map((cell, index) => (
                 <Cell
                     key={index}

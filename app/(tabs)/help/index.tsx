@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -7,73 +7,82 @@ export default function HelpScreen() {
     const router = useRouter();
 
     return (
-        <View style={styles.container}>
+        <View className="flex-1 bg-gray-900 pt-12">
             <TouchableOpacity
-                style={styles.backButton}
+                className="flex-row items-center p-4 pl-5"
                 onPress={() => router.back()}
             >
                 <Ionicons name="arrow-back" size={24} color="#1bb5fc" />
-                <Text style={styles.backText}>Retour</Text>
+                <Text className="text-blue-400 text-base ml-2.5 font-medium">Retour</Text>
             </TouchableOpacity>
 
-            <ScrollView contentContainerStyle={styles.content}>
-                <Text style={styles.title}>📖 Aide - Règles du Démineur</Text>
+            <ScrollView contentContainerClassName="p-5 pb-10">
+                <Text className="text-3xl font-bold text-blue-400 mb-7 text-center">
+                    📖 Aide - Règles du Démineur
+                </Text>
 
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>🎯 Objectif du jeu</Text>
-                    <Text style={styles.text}>
+                <View className="bg-gray-800 rounded-xl p-5 mb-5">
+                    <Text className="text-blue-400 text-xl font-bold mb-4">🎯 Objectif du jeu</Text>
+                    <Text className="text-gray-200 text-base leading-relaxed">
                         Le but du jeu est de découvrir toutes les cases qui ne contiennent pas de mines,
                         sans faire exploser aucune bombe.
                     </Text>
                 </View>
 
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>🧩 Comment jouer</Text>
-                    <View style={styles.ruleItem}>
+                <View className="bg-gray-800 rounded-xl p-5 mb-5">
+                    <Text className="text-blue-400 text-xl font-bold mb-4">🧩 Comment jouer</Text>
+                    
+                    <View className="flex-row items-center mb-3">
                         <Ionicons name="square-outline" size={20} color="#1bb5fc" />
-                        <Text style={styles.ruleText}>
+                        <Text className="text-gray-200 text-base ml-2.5 flex-1">
                             Cliquez sur une case pour la révéler.
                         </Text>
                     </View>
-                    <View style={styles.ruleItem}>
-                        <Text style={styles.number}>1️⃣</Text>
-                        <Text style={styles.ruleText}>
+                    
+                    <View className="flex-row items-center mb-3">
+                        <Text className="text-xl mr-2.5">1️⃣</Text>
+                        <Text className="text-gray-200 text-base flex-1">
                             Les nombres indiquent combien de bombes se trouvent dans les cases adjacentes.
                         </Text>
                     </View>
-                    <View style={styles.ruleItem}>
+                    
+                    <View className="flex-row items-center mb-3">
                         <Ionicons name="alert-circle" size={20} color="#FF3B3B" />
-                        <Text style={styles.ruleText}>
+                        <Text className="text-gray-200 text-base ml-2.5 flex-1">
                             Si vous cliquez sur une bombe, la partie est perdue.
                         </Text>
                     </View>
-                    <View style={styles.ruleItem}>
+                    
+                    <View className="flex-row items-center">
                         <Ionicons name="flag" size={20} color="#00B300" />
-                        <Text style={styles.ruleText}>
+                        <Text className="text-gray-200 text-base ml-2.5 flex-1">
                             Pour marquer une case suspectée d'être une bombe, maintenez appuyé.
                         </Text>
                     </View>
                 </View>
 
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>🎮 Niveaux de difficulté</Text>
-                    <View style={styles.levelItem}>
-                        <Text style={styles.levelTitle}>Facile</Text>
-                        <Text style={styles.levelDesc}>10×10 cases, 20 bombes</Text>
+                <View className="bg-gray-800 rounded-xl p-5 mb-5">
+                    <Text className="text-blue-400 text-xl font-bold mb-4">🎮 Niveaux de difficulté</Text>
+                    
+                    <View className="bg-gray-700 rounded-lg p-4 mb-2.5">
+                        <Text className="text-blue-400 text-lg font-bold mb-1">Facile</Text>
+                        <Text className="text-gray-400 text-sm">10×10 cases, 20 bombes</Text>
                     </View>
-                    <View style={styles.levelItem}>
-                        <Text style={styles.levelTitle}>Medium</Text>
-                        <Text style={styles.levelDesc}>20×20 cases, 40 bombes</Text>
+                    
+                    <View className="bg-gray-700 rounded-lg p-4 mb-2.5">
+                        <Text className="text-blue-400 text-lg font-bold mb-1">Medium</Text>
+                        <Text className="text-gray-400 text-sm">20×20 cases, 40 bombes</Text>
                     </View>
-                    <View style={styles.levelItem}>
-                        <Text style={styles.levelTitle}>Difficile</Text>
-                        <Text style={styles.levelDesc}>30×30 cases, 60 bombes</Text>
+                    
+                    <View className="bg-gray-700 rounded-lg p-4">
+                        <Text className="text-blue-400 text-lg font-bold mb-1">Difficile</Text>
+                        <Text className="text-gray-400 text-sm">40×40 cases, 60 bombes</Text>
                     </View>
                 </View>
 
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>💡 Conseils</Text>
-                    <Text style={styles.text}>
+                <View className="bg-gray-800 rounded-xl p-5 mb-5">
+                    <Text className="text-blue-400 text-xl font-bold mb-4">💡 Conseils</Text>
+                    <Text className="text-gray-200 text-base leading-relaxed">
                         1. Commencez par cliquer au hasard, mais évitez les coins au début.{'\n'}
                         2. Si une case affiche "1" et qu'une seule case adjacente n'est pas découverte,
                         c'est probablement une bombe.{'\n'}
@@ -81,9 +90,9 @@ export default function HelpScreen() {
                     </Text>
                 </View>
 
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>🎵 Options disponibles</Text>
-                    <Text style={styles.text}>
+                <View className="bg-gray-800 rounded-xl p-5">
+                    <Text className="text-blue-400 text-xl font-bold mb-4">🎵 Options disponibles</Text>
+                    <Text className="text-gray-200 text-base leading-relaxed">
                         • Contrôle du volume de la musique{'\n'}
                         • Activation/désactivation des vibrations{'\n'}
                         • Sélection du niveau de difficulté{'\n'}
@@ -94,82 +103,3 @@ export default function HelpScreen() {
         </View>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#1a1a2e',
-        paddingTop: 50,
-    },
-    backButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: 15,
-        paddingLeft: 20,
-    },
-    backText: {
-        color: '#1bb5fc',
-        fontSize: 16,
-        marginLeft: 10,
-        fontWeight: '500',
-    },
-    content: {
-        padding: 20,
-        paddingBottom: 40,
-    },
-    title: {
-        fontSize: 28,
-        fontWeight: 'bold',
-        color: '#1bb5fc',
-        marginBottom: 30,
-        textAlign: 'center',
-    },
-    section: {
-        backgroundColor: '#16213e',
-        borderRadius: 10,
-        padding: 20,
-        marginBottom: 20,
-    },
-    sectionTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#1bb5fc',
-        marginBottom: 15,
-    },
-    text: {
-        color: '#e6e6e6',
-        fontSize: 16,
-        lineHeight: 24,
-    },
-    ruleItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 12,
-    },
-    ruleText: {
-        color: '#e6e6e6',
-        fontSize: 16,
-        marginLeft: 10,
-        flex: 1,
-    },
-    number: {
-        fontSize: 20,
-        marginRight: 10,
-    },
-    levelItem: {
-        backgroundColor: '#0f3460',
-        borderRadius: 8,
-        padding: 15,
-        marginBottom: 10,
-    },
-    levelTitle: {
-        color: '#1bb5fc',
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 5,
-    },
-    levelDesc: {
-        color: '#858889',
-        fontSize: 14,
-    },
-});

@@ -6,14 +6,11 @@ const RestartButton: React.FC<RestartButtonProps> = ({ onPress }) => {
     return (
         <TouchableOpacity
             onPress={onPress}
-            style={{
-                backgroundColor: '#1bb5fc',
-                padding: 15,
-                borderRadius: 5,
-                marginTop: 20,
-            }}
+            className="bg-blue-400 py-4 px-6 rounded-lg"
         >
-            <Text style={{ color: 'white', textAlign: 'center' }}>Recommencer</Text>
+            <Text className="text-white text-center text-base font-medium">
+                Recommencer
+            </Text>
         </TouchableOpacity>
     );
 };

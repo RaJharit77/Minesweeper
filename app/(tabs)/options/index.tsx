@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
-    StyleSheet,
     TouchableOpacity,
     ScrollView,
     Alert,
@@ -48,7 +47,7 @@ export default function OptionsScreen() {
                 await sound.unloadAsync();
             }
             const { sound: newSound } = await Audio.Sound.createAsync(
-                require('../../../assets/sounds/game_over.mp3'),
+                require('../../../assets/sounds/game.mp3'),
                 { volume: localVolume }
             );
             setSound(newSound);
@@ -71,15 +70,11 @@ export default function OptionsScreen() {
     const testVibration = () => {
         if (localVibration) {
             try {
-                console.log('Testing vibration...');
-
                 if (Platform.OS === 'android') {
                     Vibration.vibrate([0, 500, 200, 300]);
                 } else {
                     Vibration.vibrate(500);
                 }
-
-                console.log('Vibration test successful');
             } catch (error) {
                 console.error('Error testing vibration:', error);
                 Alert.alert('Erreur', 'Les vibrations ne sont pas disponibles sur cet appareil');
@@ -135,345 +130,301 @@ export default function OptionsScreen() {
         setLocalVolume(newVolume);
     };
 
+    const toggleVolume = () => {
+        setLocalVolume(localVolume > 0 ? 0 : 0.5);
+    };
+
     const levelConfig = LEVEL_CONFIGS[localLevel];
 
     return (
-        <View style={styles.container}>
-            <View style={styles.header}>
+        <View className="flex-1 bg-gray-900">
+            <View className="flex-row items-center justify-between pt-12 px-5 pb-5 bg-gray-800">
                 <TouchableOpacity
-                    style={styles.backButton}
+                    className="p-3 rounded-lg bg-gray-700"
                     onPress={handleCancel}
                 >
                     <Ionicons name="arrow-back" size={24} color="#1bb5fc" />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Options</Text>
-                <View style={styles.headerPlaceholder} />
+                
+                <View className="flex-1 items-center">
+                    <Text className="text-blue-400 text-2xl font-bold">Options</Text>
+                    <Text className="text-gray-400 text-sm mt-1">Personnalisez votre expérience</Text>
+                </View>
+                
+                <View className="w-14" />
             </View>
 
-            <ScrollView contentContainerStyle={styles.content}>
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>
-                        <Ionicons name="volume-high" size={20} color="#1bb5fc" /> Volume
-                    </Text>
+            <ScrollView 
+                contentContainerClassName="p-5 pb-10"
+                showsVerticalScrollIndicator={false}
+            >
+                <View className="bg-gray-800 rounded-2xl p-6 mb-6 shadow-lg">
+                    <View className="flex-row items-center mb-6">
+                        <View className="bg-blue-900 p-3 rounded-xl mr-4">
+                            <Ionicons name="volume-high" size={28} color="#1bb5fc" />
+                        </View>
+                        <View>
+                            <Text className="text-blue-400 text-xl font-bold">Volume</Text>
+                            <Text className="text-gray-400 text-sm">Ajustez le volume du jeu</Text>
+                        </View>
+                    </View>
 
-                    <View style={styles.volumeControls}>
+                    {/* Contrôles de volume */}
+                    <View className="flex-row items-center justify-between mb-6">
                         <TouchableOpacity
-                            style={styles.volumeButton}
+                            className="p-3 bg-red-500/20 rounded-xl active:bg-red-500/30"
                             onPress={decreaseVolume}
                         >
-                            <Ionicons name="remove-circle" size={32} color="#FF3B3B" />
+                            <Ionicons name="remove-circle-outline" size={36} color="#FF3B3B" />
                         </TouchableOpacity>
 
                         <TouchableOpacity
-                            style={styles.muteButton}
-                            onPress={() => setLocalVolume(localVolume > 0 ? 0 : 0.5)}
+                            className="p-3 bg-blue-500/20 rounded-xl active:bg-blue-500/30"
+                            onPress={toggleVolume}
                         >
                             <Ionicons
-                                name={localVolume === 0 ? "volume-mute" : "volume-medium"}
-                                size={32}
+                                name={localVolume === 0 ? "volume-mute-outline" : "volume-medium"}
+                                size={40}
                                 color="#1bb5fc"
                             />
                         </TouchableOpacity>
 
                         <TouchableOpacity
-                            style={styles.volumeButton}
+                            className="p-3 bg-green-500/20 rounded-xl active:bg-green-500/30"
                             onPress={increaseVolume}
                         >
-                            <Ionicons name="add-circle" size={32} color="#00B300" />
+                            <Ionicons name="add-circle-outline" size={36} color="#00B300" />
                         </TouchableOpacity>
                     </View>
 
-                    <View style={styles.sliderContainer}>
+                    <View className="mb-8">
+                        <View className="flex-row items-center justify-between mb-2">
+                            <Text className="text-gray-400 text-sm">Silence</Text>
+                            <View className="flex-row items-center">
+                                <Text className="text-blue-400 text-lg font-bold mr-2">
+                                    {Math.round(localVolume * 100)}%
+                                </Text>
+                                <View className="w-8 h-8 bg-blue-400/20 rounded-full items-center justify-center">
+                                    <Text className="text-blue-400 text-xs font-bold">
+                                        {Math.round(localVolume * 100)}
+                                    </Text>
+                                </View>
+                            </View>
+                            <Text className="text-gray-400 text-sm">Max</Text>
+                        </View>
+                        
                         <Slider
-                            style={styles.slider}
+                            style={{ width: '100%', height: 40 }}
                             minimumValue={0}
                             maximumValue={1}
                             value={localVolume}
                             onValueChange={setLocalVolume}
                             minimumTrackTintColor="#1bb5fc"
-                            maximumTrackTintColor="#858889"
+                            maximumTrackTintColor="#374151"
                             thumbTintColor="#1bb5fc"
                         />
-                        <Text style={styles.volumeText}>{Math.round(localVolume * 100)}%</Text>
                     </View>
 
                     <TouchableOpacity
-                        style={styles.testButton}
+                        className="bg-blue-500 py-4 rounded-xl items-center active:opacity-90"
                         onPress={playTestSound}
                     >
-                        <Text style={styles.testButtonText}>
-                            <Ionicons name="play" size={16} color="white" /> Tester le son (2s)
-                        </Text>
+                        <View className="flex-row items-center">
+                            <Ionicons name="play-circle" size={24} color="white" />
+                            <Text className="text-white text-base font-bold ml-3">
+                                Tester le son (2s)
+                            </Text>
+                        </View>
                     </TouchableOpacity>
                 </View>
 
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>
-                        <Ionicons name="phone-portrait" size={20} color="#1bb5fc" /> Vibration
-                    </Text>
+                <View className="bg-gray-800 rounded-2xl p-6 mb-6 shadow-lg">
+                    <View className="flex-row items-center mb-6">
+                        <View className="bg-green-900 p-3 rounded-xl mr-4">
+                            <MaterialIcons name="vibration" size={28} color="#00B300" />
+                        </View>
+                        <View>
+                            <Text className="text-blue-400 text-xl font-bold">Vibration</Text>
+                            <Text className="text-gray-400 text-sm">Activez/désactivez les vibrations</Text>
+                        </View>
+                    </View>
 
-                    <View style={styles.vibrationContainer}>
-                        <View style={styles.vibrationToggle}>
-                            <Text style={styles.vibrationText}>
-                                Vibration {localVibration ? 'activée' : 'désactivée'}
-                            </Text>
+                    <View className="items-center mb-8">
+                        <View className="flex-row items-center justify-between w-full mb-8">
+                            <View className="flex-1">
+                                <Text className="text-gray-200 text-lg font-medium">
+                                    {localVibration ? 'Vibration activée' : 'Vibration désactivée'}
+                                </Text>
+                                <Text className="text-gray-400 text-sm mt-1">
+                                    {localVibration 
+                                        ? 'Le téléphone vibrera lors des événements' 
+                                        : 'Aucune vibration ne sera déclenchée'}
+                                </Text>
+                            </View>
+                            
                             <TouchableOpacity
-                                style={[
-                                    styles.toggle,
-                                    localVibration ? styles.toggleOn : styles.toggleOff,
-                                ]}
+                                className={`w-20 h-10 rounded-full p-1 justify-center ${localVibration ? 'bg-green-600' : 'bg-gray-600'}`}
                                 onPress={() => setLocalVibration(!localVibration)}
                             >
                                 <View
-                                    style={[
-                                        styles.toggleCircle,
-                                        localVibration && styles.toggleCircleOn,
-                                    ]}
+                                    className={`w-8 h-8 rounded-full bg-white shadow-lg ${localVibration ? 'ml-10' : ''}`}
+                                    style={localVibration ? { marginLeft: 40 } : {}}
                                 />
                             </TouchableOpacity>
                         </View>
 
-                        <View style={styles.vibrationIcon}>
+                        <View className="my-4">
                             {localVibration ? (
-                                <MaterialIcons name="vibration" size={40} color="#00B300" />
+                                <View className="items-center">
+                                    <MaterialIcons name="vibration" size={60} color="#00B300" />
+                                    <Text className="text-green-400 text-sm mt-2">Vibration active</Text>
+                                </View>
                             ) : (
-                                <MaterialIcons name="phonelink-erase" size={40} color="#FF3B3B" />
+                                <View className="items-center">
+                                    <MaterialIcons name="phonelink-erase" size={60} color="#FF3B3B" />
+                                    <Text className="text-red-400 text-sm mt-2">Vibration inactive</Text>
+                                </View>
                             )}
                         </View>
 
                         <TouchableOpacity
-                            style={styles.testButton}
+                            className="bg-green-500 py-4 rounded-xl items-center w-full active:opacity-90"
                             onPress={testVibration}
+                            disabled={!localVibration}
                         >
-                            <Text style={styles.testButtonText}>
-                                <Ionicons name="hand-left" size={16} color="white" /> Tester la vibration
-                            </Text>
+                            <View className="flex-row items-center">
+                                <Ionicons name="hand-left-outline" size={24} color="white" />
+                                <Text className="text-white text-base font-bold ml-3">
+                                    Tester la vibration
+                                </Text>
+                            </View>
                         </TouchableOpacity>
                     </View>
                 </View>
 
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>
-                        <Ionicons name="bar-chart" size={20} color="#1bb5fc" /> Niveau de difficulté
-                    </Text>
-
-                    <View style={styles.pickerContainer}>
-                        <Picker
-                            selectedValue={localLevel}
-                            onValueChange={(itemValue) => setLocalLevel(itemValue)}
-                            style={styles.picker}
-                            dropdownIconColor="#1bb5fc"
-                        >
-                            <Picker.Item label="Facile (10×10, 20 bombes)" value="easy" />
-                            <Picker.Item label="Medium (20×20, 40 bombes)" value="medium" />
-                            <Picker.Item label="Difficile (30×30, 60 bombes)" value="difficult" />
-                        </Picker>
+                <View className="bg-gray-800 rounded-2xl p-6 mb-6 shadow-lg">
+                    <View className="flex-row items-center mb-6">
+                        <View className="bg-purple-900 p-3 rounded-xl mr-4">
+                            <Ionicons name="bar-chart" size={28} color="#9d4edd" />
+                        </View>
+                        <View>
+                            <Text className="text-blue-400 text-xl font-bold">Niveau de difficulté</Text>
+                            <Text className="text-gray-400 text-sm">Choisissez la taille de la grille</Text>
+                        </View>
                     </View>
 
-                    <View style={styles.levelInfo}>
-                        <Text style={styles.levelInfoText}>
-                            <Ionicons name="grid" size={16} color="#1bb5fc" /> Grille: {levelConfig.GRID_SIZE}×{levelConfig.GRID_SIZE}
+                    <View className="mb-6">
+                        <View className="bg-gray-700 rounded-xl overflow-hidden border border-gray-600">
+                            <Picker
+                                selectedValue={localLevel}
+                                onValueChange={(itemValue) => setLocalLevel(itemValue)}
+                                style={{ 
+                                    color: '#e5e7eb',
+                                    height: 60,
+                                    backgroundColor: '#1f2937'
+                                }}
+                                dropdownIconColor="#1bb5fc"
+                                mode="dropdown"
+                            >
+                                <Picker.Item 
+                                    label="🎮 Facile - 10×10 (20 bombes)" 
+                                    value="easy" 
+                                    style={{ fontSize: 16 }}
+                                />
+                                <Picker.Item 
+                                    label="⚡ Medium - 20×20 (40 bombes)" 
+                                    value="medium" 
+                                    style={{ fontSize: 16 }}
+                                />
+                                <Picker.Item 
+                                    label="💀 Difficile - 40×40 (60 bombes)" 
+                                    value="difficult" 
+                                    style={{ fontSize: 16 }}
+                                />
+                            </Picker>
+                        </View>
+                    </View>
+
+                    <View className="bg-gray-700/50 rounded-xl p-5 border border-gray-600">
+                        <Text className="text-blue-400 text-lg font-bold mb-4 text-center">
+                            📊 Détails du niveau
                         </Text>
-                        <Text style={styles.levelInfoText}>
-                            <Ionicons name="nuclear" size={16} color="#FF3B3B" /> Bombes: {levelConfig.BOMBS_COUNT}
-                        </Text>
-                        <Text style={styles.levelInfoText}>
-                            <Ionicons name="square" size={16} color="#00B300" /> Taille case: {levelConfig.CELL_SIZE}px
-                        </Text>
+                        
+                        <View className="space-y-3">
+                            <View className="flex-row items-center">
+                                <View className="bg-blue-900/30 p-2 rounded-lg mr-3">
+                                    <Ionicons name="grid" size={20} color="#1bb5fc" />
+                                </View>
+                                <View className="flex-1">
+                                    <Text className="text-gray-400 text-sm">Taille de la grille</Text>
+                                    <Text className="text-gray-200 text-base font-medium">
+                                        {levelConfig.GRID_SIZE} × {levelConfig.GRID_SIZE} cases
+                                    </Text>
+                                </View>
+                                <Text className="text-blue-400 font-bold">
+                                    {levelConfig.GRID_SIZE * levelConfig.GRID_SIZE} cases
+                                </Text>
+                            </View>
+                            
+                            <View className="flex-row items-center">
+                                <View className="bg-red-900/30 p-2 rounded-lg mr-3">
+                                    <Ionicons name="nuclear" size={20} color="#FF3B3B" />
+                                </View>
+                                <View className="flex-1">
+                                    <Text className="text-gray-400 text-sm">Nombre de bombes</Text>
+                                    <Text className="text-gray-200 text-base font-medium">
+                                        {levelConfig.BOMBS_COUNT} bombes
+                                    </Text>
+                                </View>
+                                <Text className="text-red-400 font-bold">
+                                    {Math.round((levelConfig.BOMBS_COUNT / (levelConfig.GRID_SIZE * levelConfig.GRID_SIZE)) * 100)}% de bombes
+                                </Text>
+                            </View>
+                            
+                            <View className="flex-row items-center">
+                                <View className="bg-green-900/30 p-2 rounded-lg mr-3">
+                                    <Ionicons name="square" size={20} color="#00B300" />
+                                </View>
+                                <View className="flex-1">
+                                    <Text className="text-gray-400 text-sm">Taille des cases</Text>
+                                    <Text className="text-gray-200 text-base font-medium">
+                                        {levelConfig.CELL_SIZE} pixels
+                                    </Text>
+                                </View>
+                                <Text className="text-green-400 font-bold">
+                                    {levelConfig.CELL_SIZE}px
+                                </Text>
+                            </View>
+                        </View>
                     </View>
                 </View>
 
-                <View style={styles.actionButtons}>
+                <View className="flex-row justify-between space-x-4">
                     <TouchableOpacity
-                        style={[styles.actionButton, styles.cancelButton]}
+                        className="flex-1 py-4 rounded-xl items-center bg-red-500 active:opacity-90"
                         onPress={handleCancel}
                     >
-                        <Text style={styles.cancelButtonText}>Annuler</Text>
+                        <View className="flex-row items-center">
+                            <Ionicons name="close-circle-outline" size={24} color="white" />
+                            <Text className="text-white text-lg font-bold ml-2">
+                                Annuler
+                            </Text>
+                        </View>
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                        style={[styles.actionButton, styles.saveButton]}
+                        className="flex-1 py-4 rounded-xl items-center bg-green-500 active:opacity-90"
                         onPress={handleSave}
                     >
-                        <Ionicons name="save" size={20} color="white" />
-                        <Text style={styles.saveButtonText}>Sauvegarder</Text>
+                        <View className="flex-row items-center">
+                            <Ionicons name="save-outline" size={24} color="white" />
+                            <Text className="text-white text-lg font-bold ml-2">
+                                Sauvegarder
+                            </Text>
+                        </View>
                     </TouchableOpacity>
                 </View>
             </ScrollView>
         </View>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#1a1a2e',
-    },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingTop: 50,
-        paddingHorizontal: 20,
-        paddingBottom: 20,
-        backgroundColor: '#16213e',
-    },
-    backButton: {
-        padding: 10,
-    },
-    headerTitle: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#1bb5fc',
-    },
-    headerPlaceholder: {
-        width: 44,
-    },
-    content: {
-        padding: 20,
-        paddingBottom: 40,
-    },
-    section: {
-        backgroundColor: '#16213e',
-        borderRadius: 10,
-        padding: 20,
-        marginBottom: 20,
-    },
-    sectionTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#1bb5fc',
-        marginBottom: 20,
-    },
-    volumeControls: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        alignItems: 'center',
-        marginBottom: 20,
-    },
-    volumeButton: {
-        padding: 10,
-    },
-    muteButton: {
-        padding: 10,
-    },
-    sliderContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 15,
-    },
-    slider: {
-        flex: 1,
-        height: 40,
-    },
-    volumeText: {
-        color: '#e6e6e6',
-        fontSize: 16,
-        fontWeight: 'bold',
-        marginLeft: 15,
-        minWidth: 40,
-    },
-    testButton: {
-        backgroundColor: '#1bb5fc',
-        padding: 12,
-        borderRadius: 8,
-        alignItems: 'center',
-    },
-    testButtonText: {
-        color: 'white',
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    vibrationContainer: {
-        alignItems: 'center',
-    },
-    vibrationToggle: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        width: '100%',
-        marginBottom: 20,
-    },
-    vibrationText: {
-        color: '#e6e6e6',
-        fontSize: 16,
-        fontWeight: '500',
-    },
-    toggle: {
-        width: 60,
-        height: 30,
-        borderRadius: 15,
-        padding: 2,
-        justifyContent: 'center',
-    },
-    toggleOn: {
-        backgroundColor: '#00B300',
-    },
-    toggleOff: {
-        backgroundColor: '#858889',
-    },
-    toggleCircle: {
-        width: 26,
-        height: 26,
-        borderRadius: 13,
-        backgroundColor: 'white',
-    },
-    toggleCircleOn: {
-        alignSelf: 'flex-end',
-    },
-    vibrationIcon: {
-        marginVertical: 20,
-    },
-    pickerContainer: {
-        backgroundColor: '#0f3460',
-        borderRadius: 8,
-        marginBottom: 15,
-        overflow: 'hidden',
-    },
-    picker: {
-        color: '#e6e6e6',
-        backgroundColor: 'transparent',
-    },
-    levelInfo: {
-        backgroundColor: '#0f3460',
-        borderRadius: 8,
-        padding: 15,
-    },
-    levelInfoText: {
-        color: '#e6e6e6',
-        fontSize: 14,
-        marginBottom: 8,
-    },
-    actionButtons: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginTop: 20,
-    },
-    actionButton: {
-        flex: 1,
-        padding: 16,
-        borderRadius: 8,
-        alignItems: 'center',
-        flexDirection: 'row',
-        justifyContent: 'center',
-    },
-    cancelButton: {
-        backgroundColor: '#FF3B3B',
-        marginRight: 10,
-    },
-    saveButton: {
-        backgroundColor: '#00B300',
-        marginLeft: 10,
-    },
-    cancelButtonText: {
-        color: 'white',
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    saveButtonText: {
-        color: 'white',
-        fontSize: 16,
-        fontWeight: 'bold',
-        marginLeft: 10,
-    },
-});

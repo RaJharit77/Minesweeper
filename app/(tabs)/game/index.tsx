@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
     Alert,
-    StyleSheet,
     ScrollView,
     Dimensions,
     TouchableOpacity,
@@ -11,7 +10,6 @@ import {
     Platform
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Audio } from 'expo-av';
 import { Grid as GridType } from '../../types/Game';
 import { createGrid, revealCell } from '../../util/gameLogic';
 import Grid from '../../components/Grid';
@@ -19,6 +17,7 @@ import RestartButton from '../../components/RestartButton';
 import { useGameStore } from '../../store/useSettingsStore';
 import { getLevelConfig } from '../../constants/Game';
 import { Ionicons } from '@expo/vector-icons';
+import { useGameAudio } from '../../hooks/useGameAudio';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -26,6 +25,15 @@ const GameScreen: React.FC = () => {
     const router = useRouter();
     const { isVibrationEnabled, level } = useGameStore();
     const levelConfig = getLevelConfig(level);
+    
+    const {
+        playBackgroundMusic,
+        stopBackgroundMusic,
+        playGameOverSound,
+        stopGameOverSound,
+        isBackgroundMusicPlaying,
+        toggleBackgroundMusic
+    } = useGameAudio();
 
     const [grid, setGrid] = useState<GridType>(
         createGrid(levelConfig.GRID_SIZE, levelConfig.BOMBS_COUNT)
@@ -33,48 +41,10 @@ const GameScreen: React.FC = () => {
     const [gameOver, setGameOver] = useState(false);
     const [zoom, setZoom] = useState(1);
     const [showZoomControls, setShowZoomControls] = useState(false);
-    const soundRef = useRef<Audio.Sound | null>(null);
-
-    const playGameOverSound = async () => {
-        try {
-            if (soundRef.current) {
-                await soundRef.current.stopAsync();
-                await soundRef.current.unloadAsync();
-                soundRef.current = null;
-            }
-
-            console.log('Playing game over sound...');
-            const { sound: newSound } = await Audio.Sound.createAsync(
-                require('../../../assets/sounds/game_over.mp3'),
-                {
-                    shouldPlay: true,
-                    volume: 0.7
-                }
-            );
-
-            soundRef.current = newSound;
-            await newSound.playAsync();
-            console.log('Game over sound played successfully');
-
-        } catch (error) {
-            console.error('Error playing game over sound:', error);
-        }
-    };
-
-    const stopGameOverSound = async () => {
-        try {
-            if (soundRef.current) {
-                await soundRef.current.stopAsync();
-                await soundRef.current.unloadAsync();
-                soundRef.current = null;
-                console.log('Game over sound stopped');
-            }
-        } catch (error) {
-            console.error('Error stopping game over sound:', error);
-        }
-    };
 
     useEffect(() => {
+        playBackgroundMusic();
+
         const gridSize = levelConfig.GRID_SIZE * levelConfig.CELL_SIZE;
         if (gridSize > SCREEN_WIDTH * 0.9) {
             const calculatedZoom = (SCREEN_WIDTH * 0.9) / gridSize;
@@ -84,6 +54,11 @@ const GameScreen: React.FC = () => {
             setZoom(1);
             setShowZoomControls(false);
         }
+
+        return () => {
+            stopBackgroundMusic();
+            stopGameOverSound();
+        };
     }, [levelConfig]);
 
     const handleCellPress = async (x: number, y: number) => {
@@ -96,13 +71,11 @@ const GameScreen: React.FC = () => {
 
             if (isVibrationEnabled) {
                 try {
-                    console.log('Triggering vibration on Game Over...');
                     if (Platform.OS === 'android') {
                         Vibration.vibrate([0, 500, 200, 500]);
                     } else {
                         Vibration.vibrate([0, 500]);
                     }
-                    console.log('Vibration triggered successfully');
                 } catch (error) {
                     console.log('Erreur de vibration:', error);
                 }
@@ -128,6 +101,10 @@ const GameScreen: React.FC = () => {
         await stopGameOverSound();
         setGrid(createGrid(levelConfig.GRID_SIZE, levelConfig.BOMBS_COUNT));
         setGameOver(false);
+        
+        if (!isBackgroundMusicPlaying) {
+            playBackgroundMusic();
+        }
     };
 
     const increaseZoom = () => {
@@ -142,26 +119,20 @@ const GameScreen: React.FC = () => {
         setZoom(1);
     };
 
-    useEffect(() => {
-        return () => {
-            stopGameOverSound();
-        };
-    }, []);
-
     return (
-        <View style={styles.container}>
-            <View style={styles.header}>
+        <View className="flex-1 bg-gray-900">
+            <View className="flex-row items-center justify-between pt-12 px-5 pb-5 bg-gray-800">
                 <TouchableOpacity
-                    style={styles.backButton}
+                    className="flex-row items-center"
                     onPress={() => router.back()}
                 >
                     <Ionicons name="arrow-back" size={24} color="#1bb5fc" />
-                    <Text style={styles.backText}>Menu</Text>
+                    <Text className="text-blue-400 text-base ml-2 font-medium">Menu</Text>
                 </TouchableOpacity>
 
-                <View style={styles.headerInfo}>
-                    <Text style={styles.levelText}>Niveau: {level}</Text>
-                    <Text style={styles.statsText}>
+                <View className="items-end">
+                    <Text className="text-blue-400 text-base font-bold">Niveau: {level}</Text>
+                    <Text className="text-gray-400 text-xs mt-0.5">
                         Bombes: {levelConfig.BOMBS_COUNT} | Grille: {levelConfig.GRID_SIZE}×{levelConfig.GRID_SIZE}
                     </Text>
                 </View>
@@ -170,20 +141,20 @@ const GameScreen: React.FC = () => {
             <ScrollView
                 horizontal={true}
                 showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.scrollContainer}
+                contentContainerClassName="items-center justify-center flex-grow"
             >
                 <ScrollView
                     showsVerticalScrollIndicator={false}
-                    contentContainerStyle={styles.scrollContainer}
+                    contentContainerClassName="items-center justify-center flex-grow"
                 >
-                    <View style={[
-                        styles.gridContainer,
-                        {
+                    <View 
+                        className="my-5"
+                        style={{
                             transform: [{ scale: zoom }],
                             width: levelConfig.GRID_SIZE * levelConfig.CELL_SIZE,
                             height: levelConfig.GRID_SIZE * levelConfig.CELL_SIZE,
-                        }
-                    ]}>
+                        }}
+                    >
                         <Grid
                             grid={grid}
                             onCellPress={handleCellPress}
@@ -195,23 +166,23 @@ const GameScreen: React.FC = () => {
             </ScrollView>
 
             {showZoomControls && (
-                <View style={styles.zoomControls}>
+                <View className="flex-row justify-center items-center bg-gray-800 mx-5 p-3 rounded-full mb-5">
                     <TouchableOpacity
-                        style={styles.zoomButton}
+                        className="px-5 py-2.5"
                         onPress={decreaseZoom}
                     >
                         <Ionicons name="remove-circle" size={24} color="#FF3B3B" />
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                        style={styles.zoomButton}
+                        className="px-5 py-2.5"
                         onPress={resetZoom}
                     >
-                        <Text style={styles.zoomText}>{Math.round(zoom * 100)}%</Text>
+                        <Text className="text-blue-400 text-base font-bold">{Math.round(zoom * 100)}%</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                        style={styles.zoomButton}
+                        className="px-5 py-2.5"
                         onPress={increaseZoom}
                     >
                         <Ionicons name="add-circle" size={24} color="#00B300" />
@@ -219,124 +190,39 @@ const GameScreen: React.FC = () => {
                 </View>
             )}
 
-            <View style={styles.footer}>
-                {gameOver && (
-                    <View style={styles.gameOverContainer}>
-                        <Text style={styles.gameOverText}>💣 Game Over! 💣</Text>
+            <View className="p-5 items-center">
+                {gameOver ? (
+                    <View className="items-center mb-5 w-full">
+                        <Text className="text-red-500 text-2xl font-bold mb-5">💣 Game Over! 💣</Text>
                         <RestartButton onPress={handleRestart} />
                     </View>
-                )}
-
-                {!gameOver && (
+                ) : (
                     <TouchableOpacity
-                        style={styles.restartButton}
+                        className="bg-blue-400 px-6 py-4 rounded flex-row items-center justify-center mt-5 min-w-[200px]"
                         onPress={handleRestart}
                     >
                         <Ionicons name="refresh" size={20} color="white" />
-                        <Text style={styles.restartButtonText}>Recommencer</Text>
+                        <Text className="text-white text-center ml-2 text-base font-bold">Recommencer</Text>
                     </TouchableOpacity>
                 )}
+
+                {/* Bouton pour contrôler la musique */}
+                <TouchableOpacity
+                    className="mt-4 p-3 bg-gray-800 rounded-lg flex-row items-center"
+                    onPress={toggleBackgroundMusic}
+                >
+                    <Ionicons 
+                        name={isBackgroundMusicPlaying ? "volume-high" : "volume-mute"} 
+                        size={20} 
+                        color="#1bb5fc" 
+                    />
+                    <Text className="text-blue-400 ml-2">
+                        {isBackgroundMusicPlaying ? 'Musique ON' : 'Musique OFF'}
+                    </Text>
+                </TouchableOpacity>
             </View>
         </View>
     );
 };
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#1a1a2e',
-    },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingTop: 50,
-        paddingHorizontal: 20,
-        paddingBottom: 20,
-        backgroundColor: '#16213e',
-    },
-    backButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    backText: {
-        color: '#1bb5fc',
-        fontSize: 16,
-        marginLeft: 10,
-        fontWeight: '500',
-    },
-    headerInfo: {
-        alignItems: 'flex-end',
-    },
-    levelText: {
-        color: '#1bb5fc',
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    statsText: {
-        color: '#858889',
-        fontSize: 12,
-        marginTop: 2,
-    },
-    scrollContainer: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexGrow: 1,
-    },
-    gridContainer: {
-        marginVertical: 20,
-    },
-    zoomControls: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#16213e',
-        padding: 10,
-        marginHorizontal: 20,
-        borderRadius: 25,
-        marginBottom: 20,
-    },
-    zoomButton: {
-        paddingHorizontal: 20,
-        paddingVertical: 10,
-    },
-    zoomText: {
-        color: '#1bb5fc',
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    footer: {
-        padding: 20,
-        alignItems: 'center',
-    },
-    gameOverContainer: {
-        alignItems: 'center',
-        marginBottom: 20,
-        width: '100%',
-    },
-    gameOverText: {
-        color: 'red',
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 20,
-    },
-    restartButton: {
-        backgroundColor: '#1bb5fc',
-        padding: 15,
-        borderRadius: 5,
-        marginTop: 20,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minWidth: 200,
-    },
-    restartButtonText: {
-        color: 'white',
-        textAlign: 'center',
-        marginLeft: 10,
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-});
 
 export default GameScreen;

@@ -1,6 +1,7 @@
 import { Redirect } from 'expo-router';
 import { useEffect } from 'react';
 import { Audio } from 'expo-av';
+import "../global.css";
 
 export default function Index() {
   useEffect(() => {
