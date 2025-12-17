@@ -97,11 +97,9 @@ const GameScreen: React.FC = () => {
             if (isVibrationEnabled) {
                 try {
                     console.log('Triggering vibration on Game Over...');
-                    // Utiliser Vibration au lieu de Haptics pour plus de compatibilité
                     if (Platform.OS === 'android') {
                         Vibration.vibrate([0, 500, 200, 500]);
                     } else {
-                        // Pour iOS, pattern différent
                         Vibration.vibrate([0, 500]);
                     }
                     console.log('Vibration triggered successfully');

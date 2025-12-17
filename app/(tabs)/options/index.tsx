@@ -107,7 +107,6 @@ export default function OptionsScreen() {
 
         if (localVibration) {
             try {
-                // Vibration de succès
                 if (Platform.OS === 'android') {
                     Vibration.vibrate([0, 100, 50, 100]);
                 } else {
