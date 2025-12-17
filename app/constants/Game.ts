@@ -18,7 +18,7 @@ export const LEVEL_CONFIGS: Record<Level, LevelConfig> = {
         CELL_SIZE: 18,
     },
     difficult: {
-        GRID_SIZE: 30,
+        GRID_SIZE: 40,
         BOMBS_COUNT: 60,
         CELL_SIZE: 12,
     },
