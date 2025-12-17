@@ -4,7 +4,7 @@ const { withNativeWind } = require('nativewind/metro');
 const config = getDefaultConfig(__dirname);
 
 const configWithNativeWind = withNativeWind(config, {
-    input: './global.css',
+    input: './style/global.css',
     inlineRem: 16
 });
 
