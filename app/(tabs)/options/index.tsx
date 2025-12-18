@@ -430,7 +430,7 @@ export default function OptionsScreen() {
                     </View>
                 </View>
 
-                <View className="flex-row justify-between space-x-4">
+                <View className="flex-row justify-between space-x-6">
                     <TouchableOpacity
                         className="flex-1 py-4 rounded-xl items-center bg-red-500 active:opacity-90"
                         onPress={handleCancel}
