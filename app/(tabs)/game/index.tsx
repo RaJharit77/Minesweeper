@@ -23,7 +23,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const GameScreen: React.FC = () => {
     const router = useRouter();
-    const { isVibrationEnabled, level, volume } = useGameStore();
+    const { isVibrationEnabled, level, volume, isSoundEnabled } = useGameStore();
     const levelConfig = getLevelConfig(level);
 
     const {
@@ -45,7 +45,9 @@ const GameScreen: React.FC = () => {
     const [showZoomControls, setShowZoomControls] = useState(false);
 
     useEffect(() => {
-        playBackgroundMusic();
+        if (isSoundEnabled) {
+            playBackgroundMusic();
+        }
 
         updateVolume(volume);
 
@@ -63,7 +65,7 @@ const GameScreen: React.FC = () => {
             stopBackgroundMusic();
             stopGameOverSound();
         };
-    }, [levelConfig, volume]);
+    }, [levelConfig, volume, isSoundEnabled]);
 
     const handleCellPress = async (x: number, y: number) => {
         await playClickSound();
@@ -108,7 +110,7 @@ const GameScreen: React.FC = () => {
         setGrid(createGrid(levelConfig.GRID_SIZE, levelConfig.BOMBS_COUNT));
         setGameOver(false);
 
-        if (!isBackgroundMusicPlaying) {
+        if (!isBackgroundMusicPlaying && isSoundEnabled) {
             await playBackgroundMusic();
         }
     };
@@ -144,7 +146,6 @@ const GameScreen: React.FC = () => {
                 </View>
             </View>
 
-            {/* Grille de jeu */}
             <ScrollView
                 horizontal={true}
                 showsHorizontalScrollIndicator={false}

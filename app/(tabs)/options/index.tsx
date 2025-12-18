@@ -21,17 +21,20 @@ export default function OptionsScreen() {
     const {
         volume,
         isVibrationEnabled,
+        isSoundEnabled,
         level,
         setVolume,
         toggleVibration,
+        toggleSound,
         setLevel,
         saveSettings,
     } = useGameStore();
 
     const [localVolume, setLocalVolume] = useState(volume);
     const [localVibration, setLocalVibration] = useState(isVibrationEnabled);
+    const [localSoundEnabled, setLocalSoundEnabled] = useState(isSoundEnabled);
     const [localLevel, setLocalLevel] = useState<Level>(level);
-    
+
     const {
         playBackgroundMusic,
         stopBackgroundMusic,
@@ -39,19 +42,24 @@ export default function OptionsScreen() {
     } = useGameAudio();
 
     const playTestSound = useCallback(async () => {
+        if (!localSoundEnabled) {
+            Alert.alert('Info', 'Le son est désactivé. Activez-le pour tester.');
+            return;
+        }
+
         try {
             await playBackgroundMusic();
-            
+
             setTimeout(async () => {
                 await stopBackgroundMusic();
             }, 7000);
 
-            console.log('Test Audio', 'Le son de test durera 7 secondes');
+            //Alert.alert('Test Audio', 'Le son de test durera 7 secondes');
         } catch (error) {
             console.log('Error playing test sound:', error);
             Alert.alert('Erreur', 'Impossible de jouer le son');
         }
-    }, [playBackgroundMusic, stopBackgroundMusic]);
+    }, [playBackgroundMusic, stopBackgroundMusic, localSoundEnabled]);
 
     const testVibration = () => {
         if (localVibration) {
@@ -61,8 +69,8 @@ export default function OptionsScreen() {
                 } else {
                     Vibration.vibrate(2000);
                 }
-                
-                Alert.alert('Test Vibration', 'Vibration de test activée (plus intense)');
+
+                //Alert.alert('Test Vibration', 'Vibration de test activée (plus intense)');
             } catch (error) {
                 console.error('Error testing vibration:', error);
                 Alert.alert('Erreur', 'Les vibrations ne sont pas disponibles sur cet appareil');
@@ -76,6 +84,7 @@ export default function OptionsScreen() {
         saveSettings({
             volume: localVolume,
             isVibrationEnabled: localVibration,
+            isSoundEnabled: localSoundEnabled,
             level: localLevel,
         });
 
@@ -106,6 +115,7 @@ export default function OptionsScreen() {
     const handleCancel = () => {
         setLocalVolume(volume);
         setLocalVibration(isVibrationEnabled);
+        setLocalSoundEnabled(isSoundEnabled);
         setLocalLevel(level);
         router.back();
     };
@@ -122,10 +132,13 @@ export default function OptionsScreen() {
         updateVolume(newVolume);
     };
 
-    const toggleVolume = () => {
-        const newVolume = localVolume > 0 ? 0 : 0.5;
-        setLocalVolume(newVolume);
-        updateVolume(newVolume);
+    const toggleSoundEnabled = () => {
+        const newSoundEnabled = !localSoundEnabled;
+        setLocalSoundEnabled(newSoundEnabled);
+
+        if (!newSoundEnabled) {
+            stopBackgroundMusic();
+        }
     };
 
     const levelConfig = LEVEL_CONFIGS[localLevel];
@@ -139,28 +152,27 @@ export default function OptionsScreen() {
                 >
                     <Ionicons name="arrow-back" size={24} color="#1bb5fc" />
                 </TouchableOpacity>
-                
+
                 <View className="flex-1 items-center">
                     <Text className="text-blue-400 text-2xl font-bold">Options</Text>
                     <Text className="text-gray-400 text-sm mt-1">Personnalisez votre expérience</Text>
                 </View>
-                
+
                 <View className="w-14" />
             </View>
 
-            <ScrollView 
+            <ScrollView
                 contentContainerClassName="p-5 pb-10"
                 showsVerticalScrollIndicator={false}
             >
-                {/* Section Volume (le reste du code reste identique) */}
                 <View className="bg-gray-800 rounded-2xl p-6 mb-6 shadow-lg">
                     <View className="flex-row items-center mb-6">
                         <View className="bg-blue-900 p-3 rounded-xl mr-4">
                             <Ionicons name="volume-high" size={28} color="#1bb5fc" />
                         </View>
                         <View>
-                            <Text className="text-blue-400 text-xl font-bold">Volume</Text>
-                            <Text className="text-gray-400 text-sm">Ajustez le volume du jeu</Text>
+                            <Text className="text-blue-400 text-xl font-bold">Volume et Son</Text>
+                            <Text className="text-gray-400 text-sm">Ajustez le volume et activez/désactivez le son</Text>
                         </View>
                     </View>
 
@@ -168,45 +180,59 @@ export default function OptionsScreen() {
                         <TouchableOpacity
                             className="p-3 bg-red-500/20 rounded-xl active:bg-red-500/30"
                             onPress={decreaseVolume}
+                            disabled={!localSoundEnabled}
                         >
-                            <Ionicons name="remove-circle-outline" size={36} color="#FF3B3B" />
+                            <Ionicons
+                                name="remove-circle-outline"
+                                size={36}
+                                color={localSoundEnabled ? "#FF3B3B" : "#666"}
+                            />
                         </TouchableOpacity>
 
                         <TouchableOpacity
                             className="p-3 bg-blue-500/20 rounded-xl active:bg-blue-500/30"
-                            onPress={toggleVolume}
+                            onPress={toggleSoundEnabled}
                         >
                             <Ionicons
-                                name={localVolume === 0 ? "volume-mute-outline" : "volume-medium"}
+                                name={localSoundEnabled ? "volume-high" : "volume-mute"}
                                 size={40}
-                                color="#1bb5fc"
+                                color={localSoundEnabled ? "#1bb5fc" : "#666"}
                             />
                         </TouchableOpacity>
 
                         <TouchableOpacity
                             className="p-3 bg-green-500/20 rounded-xl active:bg-green-500/30"
                             onPress={increaseVolume}
+                            disabled={!localSoundEnabled}
                         >
-                            <Ionicons name="add-circle-outline" size={36} color="#00B300" />
+                            <Ionicons
+                                name="add-circle-outline"
+                                size={36}
+                                color={localSoundEnabled ? "#00B300" : "#666"}
+                            />
                         </TouchableOpacity>
                     </View>
 
                     <View className="mb-8">
                         <View className="flex-row items-center justify-between mb-2">
-                            <Text className="text-gray-400 text-sm">Silence</Text>
+                            <Text className={`text-sm ${localSoundEnabled ? "text-gray-400" : "text-gray-600"}`}>
+                                Silence
+                            </Text>
                             <View className="flex-row items-center">
-                                <Text className="text-blue-400 text-lg font-bold mr-2">
+                                <Text className={`text-lg font-bold mr-2 ${localSoundEnabled ? "text-blue-400" : "text-gray-500"}`}>
                                     {Math.round(localVolume * 100)}%
                                 </Text>
-                                <View className="w-8 h-8 bg-blue-400/20 rounded-full items-center justify-center">
-                                    <Text className="text-blue-400 text-xs font-bold">
+                                <View className={`w-8 h-8 rounded-full items-center justify-center ${localSoundEnabled ? "bg-blue-400/20" : "bg-gray-600/20"}`}>
+                                    <Text className={`text-xs font-bold ${localSoundEnabled ? "text-blue-400" : "text-gray-500"}`}>
                                         {Math.round(localVolume * 100)}
                                     </Text>
                                 </View>
                             </View>
-                            <Text className="text-gray-400 text-sm">Max</Text>
+                            <Text className={`text-sm ${localSoundEnabled ? "text-gray-400" : "text-gray-600"}`}>
+                                Max
+                            </Text>
                         </View>
-                        
+
                         <Slider
                             style={{ width: '100%', height: 40 }}
                             minimumValue={0}
@@ -216,20 +242,22 @@ export default function OptionsScreen() {
                                 setLocalVolume(value);
                                 updateVolume(value);
                             }}
-                            minimumTrackTintColor="#1bb5fc"
-                            maximumTrackTintColor="#374151"
-                            thumbTintColor="#1bb5fc"
+                            minimumTrackTintColor={localSoundEnabled ? "#1bb5fc" : "#666"}
+                            maximumTrackTintColor={localSoundEnabled ? "#374151" : "#444"}
+                            thumbTintColor={localSoundEnabled ? "#1bb5fc" : "#666"}
+                            disabled={!localSoundEnabled}
                         />
                     </View>
 
                     <TouchableOpacity
-                        className="bg-blue-500 py-4 rounded-xl items-center active:opacity-90"
+                        className={`py-4 rounded-xl items-center ${localSoundEnabled ? "bg-blue-500 active:opacity-90" : "bg-gray-600"}`}
                         onPress={playTestSound}
+                        disabled={!localSoundEnabled}
                     >
                         <View className="flex-row items-center">
                             <Ionicons name="play-circle" size={24} color="white" />
                             <Text className="text-white text-base font-bold ml-3">
-                                Tester le son (7s)
+                                {localSoundEnabled ? "Tester le son (7s)" : "Son désactivé"}
                             </Text>
                         </View>
                     </TouchableOpacity>
@@ -253,12 +281,12 @@ export default function OptionsScreen() {
                                     {localVibration ? 'Vibration activée' : 'Vibration désactivée'}
                                 </Text>
                                 <Text className="text-gray-400 text-sm mt-1">
-                                    {localVibration 
-                                        ? 'Le téléphone vibrera lors des événements' 
+                                    {localVibration
+                                        ? 'Le téléphone vibrera lors des événements'
                                         : 'Aucune vibration ne sera déclenchée'}
                                 </Text>
                             </View>
-                            
+
                             <TouchableOpacity
                                 className={`w-20 h-10 rounded-full p-1 justify-center ${localVibration ? 'bg-green-600' : 'bg-gray-600'}`}
                                 onPress={() => setLocalVibration(!localVibration)}
@@ -315,7 +343,7 @@ export default function OptionsScreen() {
                             <Picker
                                 selectedValue={localLevel}
                                 onValueChange={(itemValue) => setLocalLevel(itemValue)}
-                                style={{ 
+                                style={{
                                     color: '#e5e7eb',
                                     height: 60,
                                     backgroundColor: '#1f2937'
@@ -323,19 +351,19 @@ export default function OptionsScreen() {
                                 dropdownIconColor="#1bb5fc"
                                 mode="dropdown"
                             >
-                                <Picker.Item 
-                                    label="🎮 Facile - 10×10 (20 bombes)" 
-                                    value="easy" 
+                                <Picker.Item
+                                    label="🎮 Facile - 10×10 (20 bombes)"
+                                    value="easy"
                                     style={{ fontSize: 16 }}
                                 />
-                                <Picker.Item 
-                                    label="⚡ Medium - 20×20 (40 bombes)" 
-                                    value="medium" 
+                                <Picker.Item
+                                    label="⚡ Medium - 20×20 (40 bombes)"
+                                    value="medium"
                                     style={{ fontSize: 16 }}
                                 />
-                                <Picker.Item 
-                                    label="💀 Difficile - 40×40 (60 bombes)" 
-                                    value="difficult" 
+                                <Picker.Item
+                                    label="💀 Difficile - 40×40 (60 bombes)"
+                                    value="difficult"
                                     style={{ fontSize: 16 }}
                                 />
                             </Picker>
@@ -346,7 +374,7 @@ export default function OptionsScreen() {
                         <Text className="text-blue-400 text-lg font-bold mb-4 text-center">
                             📊 Détails du niveau
                         </Text>
-                        
+
                         <View className="space-y-3">
                             <View className="flex-row items-center">
                                 <View className="bg-blue-900/30 p-2 rounded-lg mr-3">
@@ -362,7 +390,7 @@ export default function OptionsScreen() {
                                     {levelConfig.GRID_SIZE * levelConfig.GRID_SIZE} cases
                                 </Text>
                             </View>
-                            
+
                             <View className="flex-row items-center">
                                 <View className="bg-red-900/30 p-2 rounded-lg mr-3">
                                     <Ionicons name="nuclear" size={20} color="#FF3B3B" />
@@ -377,7 +405,7 @@ export default function OptionsScreen() {
                                     {Math.round((levelConfig.BOMBS_COUNT / (levelConfig.GRID_SIZE * levelConfig.GRID_SIZE)) * 100)}% de bombes
                                 </Text>
                             </View>
-                            
+
                             <View className="flex-row items-center">
                                 <View className="bg-green-900/30 p-2 rounded-lg mr-3">
                                     <Ionicons name="square" size={20} color="#00B300" />
