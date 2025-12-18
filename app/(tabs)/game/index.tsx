@@ -23,16 +23,18 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const GameScreen: React.FC = () => {
     const router = useRouter();
-    const { isVibrationEnabled, level } = useGameStore();
+    const { isVibrationEnabled, level, volume } = useGameStore();
     const levelConfig = getLevelConfig(level);
-    
+
     const {
         playBackgroundMusic,
         stopBackgroundMusic,
         playGameOverSound,
         stopGameOverSound,
         isBackgroundMusicPlaying,
-        toggleBackgroundMusic
+        toggleBackgroundMusic,
+        playClickSound,
+        updateVolume,
     } = useGameAudio();
 
     const [grid, setGrid] = useState<GridType>(
@@ -44,6 +46,8 @@ const GameScreen: React.FC = () => {
 
     useEffect(() => {
         playBackgroundMusic();
+
+        updateVolume(volume);
 
         const gridSize = levelConfig.GRID_SIZE * levelConfig.CELL_SIZE;
         if (gridSize > SCREEN_WIDTH * 0.9) {
@@ -59,9 +63,11 @@ const GameScreen: React.FC = () => {
             stopBackgroundMusic();
             stopGameOverSound();
         };
-    }, [levelConfig]);
+    }, [levelConfig, volume]);
 
     const handleCellPress = async (x: number, y: number) => {
+        await playClickSound();
+
         const newGrid = revealCell(grid, x, y, levelConfig.GRID_SIZE);
 
         if (newGrid[x][y].isBomb) {
@@ -72,9 +78,9 @@ const GameScreen: React.FC = () => {
             if (isVibrationEnabled) {
                 try {
                     if (Platform.OS === 'android') {
-                        Vibration.vibrate([0, 500, 200, 500]);
+                        Vibration.vibrate([0, 1000, 200, 1000, 200, 1000]);
                     } else {
-                        Vibration.vibrate([0, 500]);
+                        Vibration.vibrate(2000);
                     }
                 } catch (error) {
                     console.log('Erreur de vibration:', error);
@@ -101,9 +107,9 @@ const GameScreen: React.FC = () => {
         await stopGameOverSound();
         setGrid(createGrid(levelConfig.GRID_SIZE, levelConfig.BOMBS_COUNT));
         setGameOver(false);
-        
+
         if (!isBackgroundMusicPlaying) {
-            playBackgroundMusic();
+            await playBackgroundMusic();
         }
     };
 
@@ -138,6 +144,7 @@ const GameScreen: React.FC = () => {
                 </View>
             </View>
 
+            {/* Grille de jeu */}
             <ScrollView
                 horizontal={true}
                 showsHorizontalScrollIndicator={false}
@@ -147,7 +154,7 @@ const GameScreen: React.FC = () => {
                     showsVerticalScrollIndicator={false}
                     contentContainerClassName="items-center justify-center flex-grow"
                 >
-                    <View 
+                    <View
                         className="my-5"
                         style={{
                             transform: [{ scale: zoom }],
@@ -206,15 +213,14 @@ const GameScreen: React.FC = () => {
                     </TouchableOpacity>
                 )}
 
-                {/* Bouton pour contrôler la musique */}
                 <TouchableOpacity
                     className="mt-4 p-3 bg-gray-800 rounded-lg flex-row items-center"
                     onPress={toggleBackgroundMusic}
                 >
-                    <Ionicons 
-                        name={isBackgroundMusicPlaying ? "volume-high" : "volume-mute"} 
-                        size={20} 
-                        color="#1bb5fc" 
+                    <Ionicons
+                        name={isBackgroundMusicPlaying ? "volume-high" : "volume-mute"}
+                        size={20}
+                        color="#1bb5fc"
                     />
                     <Text className="text-blue-400 ml-2">
                         {isBackgroundMusicPlaying ? 'Musique ON' : 'Musique OFF'}

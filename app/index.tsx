@@ -1,20 +1,17 @@
 import { Redirect } from 'expo-router';
 import { useEffect } from 'react';
-import { Audio } from 'expo-av';
+import { AudioModule } from 'expo-audio';
 import "../style/global.css";
 
 export default function Index() {
   useEffect(() => {
     const configureAudio = async () => {
       try {
-        await Audio.setAudioModeAsync({
-          allowsRecordingIOS: false,
-          playsInSilentModeIOS: true,
-          staysActiveInBackground: false,
-          shouldDuckAndroid: true,
-          playThroughEarpieceAndroid: false,
+        await AudioModule.setAudioModeAsync({
+          allowsRecording: false,
+          playsInSilentMode: true,
         });
-        console.log('Audio configured successfully');
+        console.log('Audio configured successfully with expo-audio');
       } catch (error) {
         console.error('Error configuring audio:', error);
       }

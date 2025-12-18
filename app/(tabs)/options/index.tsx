@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
     View,
     Text,
@@ -12,7 +12,7 @@ import { useRouter } from 'expo-router';
 import Slider from '@react-native-community/slider';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
-import { Audio } from 'expo-av';
+import { useGameAudio } from '../../hooks/useGameAudio';
 import { useGameStore, Level } from '../../store/useSettingsStore';
 import { LEVEL_CONFIGS } from '../../constants/Game';
 
@@ -31,50 +31,38 @@ export default function OptionsScreen() {
     const [localVolume, setLocalVolume] = useState(volume);
     const [localVibration, setLocalVibration] = useState(isVibrationEnabled);
     const [localLevel, setLocalLevel] = useState<Level>(level);
-    const [sound, setSound] = useState<Audio.Sound>();
+    
+    const {
+        playBackgroundMusic,
+        stopBackgroundMusic,
+        updateVolume,
+    } = useGameAudio();
 
-    useEffect(() => {
-        return () => {
-            if (sound) {
-                sound.unloadAsync();
-            }
-        };
-    }, [sound]);
-
-    const playTestSound = async () => {
+    const playTestSound = useCallback(async () => {
         try {
-            if (sound) {
-                await sound.unloadAsync();
-            }
-            const { sound: newSound } = await Audio.Sound.createAsync(
-                require('../../../assets/sounds/game.mp3'),
-                { volume: localVolume }
-            );
-            setSound(newSound);
-            await newSound.playAsync();
-
+            await playBackgroundMusic();
+            
             setTimeout(async () => {
-                try {
-                    await newSound.stopAsync();
-                    await newSound.unloadAsync();
-                } catch (error) {
-                    console.log('Error stopping sound:', error);
-                }
-            }, 2000);
+                await stopBackgroundMusic();
+            }, 7000);
+
+            console.log('Test Audio', 'Le son de test durera 7 secondes');
         } catch (error) {
-            console.log('Error playing sound:', error);
+            console.log('Error playing test sound:', error);
             Alert.alert('Erreur', 'Impossible de jouer le son');
         }
-    };
+    }, [playBackgroundMusic, stopBackgroundMusic]);
 
     const testVibration = () => {
         if (localVibration) {
             try {
                 if (Platform.OS === 'android') {
-                    Vibration.vibrate([0, 500, 200, 300]);
+                    Vibration.vibrate([0, 1000, 200, 1000, 200, 1000]);
                 } else {
-                    Vibration.vibrate(500);
+                    Vibration.vibrate(2000);
                 }
+                
+                Alert.alert('Test Vibration', 'Vibration de test activée (plus intense)');
             } catch (error) {
                 console.error('Error testing vibration:', error);
                 Alert.alert('Erreur', 'Les vibrations ne sont pas disponibles sur cet appareil');
@@ -90,6 +78,8 @@ export default function OptionsScreen() {
             isVibrationEnabled: localVibration,
             level: localLevel,
         });
+
+        updateVolume(localVolume);
 
         Alert.alert('Succès', 'Paramètres sauvegardés avec succès!', [
             {
@@ -123,15 +113,19 @@ export default function OptionsScreen() {
     const decreaseVolume = () => {
         const newVolume = Math.max(0, localVolume - 0.1);
         setLocalVolume(newVolume);
+        updateVolume(newVolume);
     };
 
     const increaseVolume = () => {
         const newVolume = Math.min(1, localVolume + 0.1);
         setLocalVolume(newVolume);
+        updateVolume(newVolume);
     };
 
     const toggleVolume = () => {
-        setLocalVolume(localVolume > 0 ? 0 : 0.5);
+        const newVolume = localVolume > 0 ? 0 : 0.5;
+        setLocalVolume(newVolume);
+        updateVolume(newVolume);
     };
 
     const levelConfig = LEVEL_CONFIGS[localLevel];
@@ -158,6 +152,7 @@ export default function OptionsScreen() {
                 contentContainerClassName="p-5 pb-10"
                 showsVerticalScrollIndicator={false}
             >
+                {/* Section Volume (le reste du code reste identique) */}
                 <View className="bg-gray-800 rounded-2xl p-6 mb-6 shadow-lg">
                     <View className="flex-row items-center mb-6">
                         <View className="bg-blue-900 p-3 rounded-xl mr-4">
@@ -169,7 +164,6 @@ export default function OptionsScreen() {
                         </View>
                     </View>
 
-                    {/* Contrôles de volume */}
                     <View className="flex-row items-center justify-between mb-6">
                         <TouchableOpacity
                             className="p-3 bg-red-500/20 rounded-xl active:bg-red-500/30"
@@ -218,7 +212,10 @@ export default function OptionsScreen() {
                             minimumValue={0}
                             maximumValue={1}
                             value={localVolume}
-                            onValueChange={setLocalVolume}
+                            onValueChange={(value) => {
+                                setLocalVolume(value);
+                                updateVolume(value);
+                            }}
                             minimumTrackTintColor="#1bb5fc"
                             maximumTrackTintColor="#374151"
                             thumbTintColor="#1bb5fc"
@@ -232,7 +229,7 @@ export default function OptionsScreen() {
                         <View className="flex-row items-center">
                             <Ionicons name="play-circle" size={24} color="white" />
                             <Text className="text-white text-base font-bold ml-3">
-                                Tester le son (2s)
+                                Tester le son (7s)
                             </Text>
                         </View>
                     </TouchableOpacity>
@@ -295,7 +292,7 @@ export default function OptionsScreen() {
                             <View className="flex-row items-center">
                                 <Ionicons name="hand-left-outline" size={24} color="white" />
                                 <Text className="text-white text-base font-bold ml-3">
-                                    Tester la vibration
+                                    Tester la vibration (intense)
                                 </Text>
                             </View>
                         </TouchableOpacity>

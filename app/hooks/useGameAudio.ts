@@ -1,23 +1,41 @@
-import { useState, useEffect, useRef } from 'react';
-import { Audio } from 'expo-av';
+import { useState, useEffect, useCallback } from 'react';
+import { useAudioPlayer, AudioModule } from 'expo-audio';
 import { useGameStore } from '../store/useSettingsStore';
 
 export const useGameAudio = () => {
     const { volume, isVibrationEnabled } = useGameStore();
     const [isBackgroundMusicPlaying, setIsBackgroundMusicPlaying] = useState(false);
-    const backgroundSoundRef = useRef<Audio.Sound | null>(null);
-    const gameOverSoundRef = useRef<Audio.Sound | null>(null);
+    const [isInitialized, setIsInitialized] = useState(false);
+
+    const backgroundPlayer = useAudioPlayer(
+        require('../../assets/sounds/background.mp3'),
+        {
+
+        }
+    );
+
+    const gameOverPlayer = useAudioPlayer(
+        require('../../assets/sounds/game_over.mp3'),
+        {
+
+        }
+    );
+
+    const clickPlayer = useAudioPlayer(
+        require('../../assets/sounds/click.mp3'),
+        {
+
+        }
+    );
 
     useEffect(() => {
         const configureAudio = async () => {
             try {
-                await Audio.setAudioModeAsync({
-                    allowsRecordingIOS: false,
-                    playsInSilentModeIOS: true,
-                    staysActiveInBackground: false,
-                    shouldDuckAndroid: true,
-                    playThroughEarpieceAndroid: false,
+                await AudioModule.setAudioModeAsync({
+                    allowsRecording: false,
+                    playsInSilentMode: true,
                 });
+                setIsInitialized(true);
                 console.log('Audio configured successfully');
             } catch (error) {
                 console.error('Error configuring audio:', error);
@@ -27,101 +45,99 @@ export const useGameAudio = () => {
         configureAudio();
 
         return () => {
-            stopBackgroundMusic();
-            stopGameOverSound();
+            // Correction : utiliser pause() au lieu de stop()
+            backgroundPlayer.pause();
+            gameOverPlayer.pause();
+            clickPlayer.pause();
         };
     }, []);
 
-    const playBackgroundMusic = async () => {
+    const playBackgroundMusic = useCallback(async () => {
+        if (!isInitialized) return;
+
         try {
-            if (backgroundSoundRef.current) {
-                await backgroundSoundRef.current.stopAsync();
-                await backgroundSoundRef.current.unloadAsync();
-                backgroundSoundRef.current = null;
-            }
-
-            const { sound } = await Audio.Sound.createAsync(
-                require('../../assets/sounds/background.mp3'),
-                {
-                    isLooping: true,
-                    volume: volume * 0.3,
-                    shouldPlay: true,
-                }
-            );
-
-            backgroundSoundRef.current = sound;
+            await backgroundPlayer.play();
             setIsBackgroundMusicPlaying(true);
-            console.log('Background music started');
+            console.log('Background music started (covers game sounds)');
         } catch (error) {
             console.error('Error playing background music:', error);
         }
-    };
+    }, [backgroundPlayer, isInitialized]);
 
-    const stopBackgroundMusic = async () => {
+    const stopBackgroundMusic = useCallback(async () => {
+        if (!isInitialized) return;
+
         try {
-            if (backgroundSoundRef.current) {
-                await backgroundSoundRef.current.stopAsync();
-                await backgroundSoundRef.current.unloadAsync();
-                backgroundSoundRef.current = null;
-                setIsBackgroundMusicPlaying(false);
-                console.log('Background music stopped');
-            }
+            // Correction : utiliser pause() au lieu de stop()
+            await backgroundPlayer.pause();
+            setIsBackgroundMusicPlaying(false);
+            console.log('Background music stopped');
         } catch (error) {
             console.error('Error stopping background music:', error);
         }
-    };
+    }, [backgroundPlayer, isInitialized]);
 
-    const playGameOverSound = async () => {
+    const playGameOverSound = useCallback(async () => {
+        if (!isInitialized) return;
+
         try {
-            if (gameOverSoundRef.current) {
-                await gameOverSoundRef.current.stopAsync();
-                await gameOverSoundRef.current.unloadAsync();
-                gameOverSoundRef.current = null;
-            }
-
             await stopBackgroundMusic();
 
-            const { sound } = await Audio.Sound.createAsync(
-                require('../../assets/sounds/game_over.mp3'),
-                {
-                    volume: volume,
-                    shouldPlay: true,
-                }
-            );
-
-            gameOverSoundRef.current = sound;
+            await gameOverPlayer.play();
             console.log('Game over sound played');
+
+            setTimeout(async () => {
+                // Correction : utiliser pause() au lieu de stop()
+                await gameOverPlayer.pause();
+            }, 3000);
         } catch (error) {
             console.error('Error playing game over sound:', error);
         }
-    };
+    }, [gameOverPlayer, stopBackgroundMusic, isInitialized]);
 
-    const stopGameOverSound = async () => {
+    const stopGameOverSound = useCallback(async () => {
+        if (!isInitialized) return;
+
         try {
-            if (gameOverSoundRef.current) {
-                await gameOverSoundRef.current.stopAsync();
-                await gameOverSoundRef.current.unloadAsync();
-                gameOverSoundRef.current = null;
-                console.log('Game over sound stopped');
-            }
+            // Correction : utiliser pause() au lieu de stop()
+            await gameOverPlayer.pause();
+            console.log('Game over sound stopped');
         } catch (error) {
             console.error('Error stopping game over sound:', error);
         }
-    };
+    }, [gameOverPlayer, isInitialized]);
 
-    const updateVolume = async (newVolume: number) => {
-        if (backgroundSoundRef.current) {
-            await backgroundSoundRef.current.setVolumeAsync(newVolume * 0.3);
+    const updateVolume = useCallback(async (newVolume: number) => {
+        if (!isInitialized) return;
+
+        try {
+            // Correction : volume est une propriété mutable, pas une méthode setVolume
+            backgroundPlayer.volume = newVolume * 0.5;
+            gameOverPlayer.volume = newVolume * 0.7;
+            clickPlayer.volume = newVolume * 0.3;
+        } catch (error) {
+            console.error('Error updating volume:', error);
         }
-    };
+    }, [backgroundPlayer, gameOverPlayer, clickPlayer, isInitialized]);
 
-    const toggleBackgroundMusic = async () => {
+    const toggleBackgroundMusic = useCallback(async () => {
         if (isBackgroundMusicPlaying) {
             await stopBackgroundMusic();
         } else {
             await playBackgroundMusic();
         }
-    };
+    }, [isBackgroundMusicPlaying, playBackgroundMusic, stopBackgroundMusic]);
+
+    const playClickSound = useCallback(async () => {
+        if (!isInitialized) return;
+
+        try {
+            await clickPlayer.seekTo(0);
+            await clickPlayer.play();
+        } catch (error) {
+            console.error('Error playing click sound:', error);
+        }
+    }, [clickPlayer, isInitialized]);
 
     return {
         isBackgroundMusicPlaying,
@@ -131,5 +147,6 @@ export const useGameAudio = () => {
         stopGameOverSound,
         updateVolume,
         toggleBackgroundMusic,
+        playClickSound,
     };
 };
