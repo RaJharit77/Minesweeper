@@ -46,12 +46,6 @@
           "backgroundColor": "#1a1a2e"
         }
       ],
-      [
-        "expo-av",
-        {
-          "microphonePermission": false
-        }
-      ],
       "expo-audio"
     ],
     "experiments": {
