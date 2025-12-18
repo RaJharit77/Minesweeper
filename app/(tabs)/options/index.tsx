@@ -257,7 +257,7 @@ export default function OptionsScreen() {
                         <View className="flex-row items-center">
                             <Ionicons name="play-circle" size={24} color="white" />
                             <Text className="text-white text-base font-bold ml-3">
-                                {localSoundEnabled ? "Tester le son (7s)" : "Son désactivé"}
+                                {localSoundEnabled ? "Tester le son" : "Son désactivé"}
                             </Text>
                         </View>
                     </TouchableOpacity>
@@ -320,7 +320,7 @@ export default function OptionsScreen() {
                             <View className="flex-row items-center">
                                 <Ionicons name="hand-left-outline" size={24} color="white" />
                                 <Text className="text-white text-base font-bold ml-3">
-                                    Tester la vibration (intense)
+                                    Tester la vibration
                                 </Text>
                             </View>
                         </TouchableOpacity>
