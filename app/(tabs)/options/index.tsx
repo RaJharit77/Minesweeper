@@ -54,7 +54,7 @@ export default function OptionsScreen() {
                 await stopBackgroundMusic();
             }, 7000);
 
-            //Alert.alert('Test Audio', 'Le son de test durera 7 secondes');
+            // Alert.alert('Test Audio', 'Le son de test durera 7 secondes');
         } catch (error) {
             console.log('Error playing test sound:', error);
             Alert.alert('Erreur', 'Impossible de jouer le son');
@@ -70,7 +70,7 @@ export default function OptionsScreen() {
                     Vibration.vibrate(2000);
                 }
 
-                //Alert.alert('Test Vibration', 'Vibration de test activée (plus intense)');
+                // Alert.alert('Test Vibration', 'Vibration de test activée (plus intense)');
             } catch (error) {
                 console.error('Error testing vibration:', error);
                 Alert.alert('Erreur', 'Les vibrations ne sont pas disponibles sur cet appareil');
@@ -166,13 +166,15 @@ export default function OptionsScreen() {
                 showsVerticalScrollIndicator={false}
             >
                 <View className="bg-gray-800 rounded-2xl p-6 mb-6 shadow-lg">
-                    <View className="flex-row items-center mb-6">
-                        <View className="bg-blue-900 p-3 rounded-xl mr-4">
+                    <View className="flex-row items-start mb-6">
+                        <View className="bg-blue-900 p-3 rounded-xl mr-4 mt-1">
                             <Ionicons name="volume-high" size={28} color="#1bb5fc" />
                         </View>
-                        <View>
-                            <Text className="text-blue-400 text-xl font-bold">Volume et Son</Text>
-                            <Text className="text-gray-400 text-sm">Ajustez le volume et activez/désactivez le son</Text>
+                        <View className="flex-1">
+                            <Text className="text-blue-400 text-xl font-bold mb-1">Volume et Son</Text>
+                            <Text className="text-gray-400 text-sm leading-tight max-w-[90%]">
+                                Ajustez le volume et activez/désactivez le son
+                            </Text>
                         </View>
                     </View>
 
@@ -215,11 +217,11 @@ export default function OptionsScreen() {
 
                     <View className="mb-8">
                         <View className="flex-row items-center justify-between mb-2">
-                            <Text className={`text-sm ${localSoundEnabled ? "text-gray-400" : "text-gray-600"}`}>
+                            <Text className={`text-xs ${localSoundEnabled ? "text-gray-400" : "text-gray-600"}`}>
                                 Silence
                             </Text>
                             <View className="flex-row items-center">
-                                <Text className={`text-lg font-bold mr-2 ${localSoundEnabled ? "text-blue-400" : "text-gray-500"}`}>
+                                <Text className={`text-base font-bold mr-2 ${localSoundEnabled ? "text-blue-400" : "text-gray-500"}`}>
                                     {Math.round(localVolume * 100)}%
                                 </Text>
                                 <View className={`w-8 h-8 rounded-full items-center justify-center ${localSoundEnabled ? "bg-blue-400/20" : "bg-gray-600/20"}`}>
@@ -228,7 +230,7 @@ export default function OptionsScreen() {
                                     </Text>
                                 </View>
                             </View>
-                            <Text className={`text-sm ${localSoundEnabled ? "text-gray-400" : "text-gray-600"}`}>
+                            <Text className={`text-xs ${localSoundEnabled ? "text-gray-400" : "text-gray-600"}`}>
                                 Max
                             </Text>
                         </View>
@@ -264,13 +266,15 @@ export default function OptionsScreen() {
                 </View>
 
                 <View className="bg-gray-800 rounded-2xl p-6 mb-6 shadow-lg">
-                    <View className="flex-row items-center mb-6">
-                        <View className="bg-green-900 p-3 rounded-xl mr-4">
+                    <View className="flex-row items-start mb-6">
+                        <View className="bg-green-900 p-3 rounded-xl mr-4 mt-1">
                             <MaterialIcons name="vibration" size={28} color="#00B300" />
                         </View>
-                        <View>
-                            <Text className="text-blue-400 text-xl font-bold">Vibration</Text>
-                            <Text className="text-gray-400 text-sm">Activez/désactivez les vibrations</Text>
+                        <View className="flex-1">
+                            <Text className="text-blue-400 text-xl font-bold mb-1">Vibration</Text>
+                            <Text className="text-gray-400 text-sm leading-tight max-w-[90%]">
+                                Activez/désactivez les vibrations
+                            </Text>
                         </View>
                     </View>
 
@@ -328,13 +332,15 @@ export default function OptionsScreen() {
                 </View>
 
                 <View className="bg-gray-800 rounded-2xl p-6 mb-6 shadow-lg">
-                    <View className="flex-row items-center mb-6">
-                        <View className="bg-purple-900 p-3 rounded-xl mr-4">
+                    <View className="flex-row items-start mb-6">
+                        <View className="bg-purple-900 p-3 rounded-xl mr-4 mt-1">
                             <Ionicons name="bar-chart" size={28} color="#9d4edd" />
                         </View>
-                        <View>
-                            <Text className="text-blue-400 text-xl font-bold">Niveau de difficulté</Text>
-                            <Text className="text-gray-400 text-sm">Choisissez la taille de la grille</Text>
+                        <View className="flex-1">
+                            <Text className="text-blue-400 text-xl font-bold mb-1">Niveau de difficulté</Text>
+                            <Text className="text-gray-400 text-sm leading-tight max-w-[90%]">
+                                Choisissez la taille de la grille
+                            </Text>
                         </View>
                     </View>
 
