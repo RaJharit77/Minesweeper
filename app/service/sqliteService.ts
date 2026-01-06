@@ -12,14 +12,22 @@ const DATABASE_NAME = 'minesweeper.db';
 
 class SqliteService {
     private db: SQLite.SQLiteDatabase | null = null;
+    private isInitialized = false;
 
     async initialize(): Promise<void> {
+        if (this.isInitialized) {
+            return;
+        }
+
         try {
+            console.log('Opening SQLite database...');
             this.db = await SQLite.openDatabaseAsync(DATABASE_NAME);
             await this.createTable();
-            console.log('SQLite database initialized');
+            this.isInitialized = true;
+            console.log('SQLite database initialized successfully');
         } catch (error) {
             console.error('Error initializing SQLite database:', error);
+            this.isInitialized = false;
             throw error;
         }
     }
@@ -40,16 +48,22 @@ class SqliteService {
         `);
     }
 
-    async saveGameState(grid: any, gameOver: boolean, gameTime: number): Promise<void> {
-        if (!this.db) {
+    private async ensureInitialized(): Promise<void> {
+        if (!this.isInitialized || !this.db) {
             await this.initialize();
         }
+    }
+
+    async saveGameState(grid: any, gameOver: boolean, gameTime: number): Promise<void> {
+        await this.ensureInitialized();
 
         try {
             const serializedGrid = JSON.stringify(grid);
 
+            // Supprimer les anciennes sauvegardes
             await this.db!.runAsync('DELETE FROM game_state');
 
+            // Insérer la nouvelle sauvegarde
             await this.db!.runAsync(
                 'INSERT INTO game_state (grid, gameOver, gameTime) VALUES (?, ?, ?)',
                 [serializedGrid, gameOver ? 1 : 0, gameTime]
@@ -58,14 +72,14 @@ class SqliteService {
             console.log('Game state saved to SQLite');
         } catch (error) {
             console.error('Error saving game state to SQLite:', error);
+            // Réessayer l'initialisation
+            this.isInitialized = false;
             throw error;
         }
     }
 
     async loadGameState(): Promise<GameStateRecord | null> {
-        if (!this.db) {
-            await this.initialize();
-        }
+        await this.ensureInitialized();
 
         try {
             const result = await this.db!.getFirstAsync<GameStateRecord>(
@@ -79,20 +93,20 @@ class SqliteService {
             return null;
         } catch (error) {
             console.error('Error loading game state from SQLite:', error);
+            this.isInitialized = false;
             return null;
         }
     }
 
     async clearGameState(): Promise<void> {
-        if (!this.db) {
-            await this.initialize();
-        }
+        await this.ensureInitialized();
 
         try {
             await this.db!.runAsync('DELETE FROM game_state');
             console.log('Game state cleared from SQLite');
         } catch (error) {
             console.error('Error clearing game state from SQLite:', error);
+            this.isInitialized = false;
             throw error;
         }
     }
@@ -100,6 +114,8 @@ class SqliteService {
     async close(): Promise<void> {
         if (this.db) {
             await this.db.closeAsync();
+            this.db = null;
+            this.isInitialized = false;
             console.log('SQLite database closed');
         }
     }
