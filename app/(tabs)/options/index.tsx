@@ -358,17 +358,17 @@ export default function OptionsScreen() {
                                 mode="dropdown"
                             >
                                 <Picker.Item
-                                    label="🎮 Facile - 10×10 (20 bombes)"
+                                    label="Facile - 10×10 (20 bombes)"
                                     value="easy"
                                     style={{ fontSize: 16 }}
                                 />
                                 <Picker.Item
-                                    label="⚡ Medium - 20×20 (40 bombes)"
+                                    label="Medium - 20×20 (40 bombes)"
                                     value="medium"
                                     style={{ fontSize: 16 }}
                                 />
                                 <Picker.Item
-                                    label="💀 Difficile - 40×40 (60 bombes)"
+                                    label="Difficile - 40×40 (60 bombes)"
                                     value="difficult"
                                     style={{ fontSize: 16 }}
                                 />
