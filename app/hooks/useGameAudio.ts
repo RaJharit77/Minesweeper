@@ -22,15 +22,20 @@ export const useGameAudio = () => {
                 console.log('Audio configured successfully');
             } catch (error) {
                 console.error('Error configuring audio:', error);
+                setIsInitialized(true);
             }
         };
 
         configureAudio();
 
         return () => {
-            if (backgroundPlayer?.pause) backgroundPlayer.pause();
-            if (gameOverPlayer?.pause) gameOverPlayer.pause();
-            if (clickPlayer?.pause) clickPlayer.pause();
+            try {
+                if (backgroundPlayer?.pause) backgroundPlayer.pause();
+                if (gameOverPlayer?.pause) gameOverPlayer.pause();
+                if (clickPlayer?.pause) clickPlayer.pause();
+            } catch (error) {
+                console.error('Error cleaning up audio:', error);
+            }
         };
     }, []);
 
@@ -38,20 +43,28 @@ export const useGameAudio = () => {
         if (!isInitialized) return;
 
         if (!isSoundEnabled && isBackgroundMusicPlaying) {
-            backgroundPlayer.pause();
-            setIsBackgroundMusicPlaying(false);
+            try {
+                backgroundPlayer.pause();
+                setIsBackgroundMusicPlaying(false);
+            } catch (error) {
+                console.error('Error pausing background music:', error);
+            }
         }
 
-        if (backgroundPlayer && gameOverPlayer && clickPlayer) {
-            if (isSoundEnabled) {
-                backgroundPlayer.volume = volume * 0.5;
-                gameOverPlayer.volume = volume * 0.7;
-                clickPlayer.volume = volume * 0.3;
-            } else {
-                backgroundPlayer.volume = 0;
-                gameOverPlayer.volume = 0;
-                clickPlayer.volume = 0;
+        try {
+            if (backgroundPlayer && gameOverPlayer && clickPlayer) {
+                if (isSoundEnabled) {
+                    backgroundPlayer.volume = volume * 0.5;
+                    gameOverPlayer.volume = volume * 0.7;
+                    clickPlayer.volume = volume * 0.3;
+                } else {
+                    backgroundPlayer.volume = 0;
+                    gameOverPlayer.volume = 0;
+                    clickPlayer.volume = 0;
+                }
             }
+        } catch (error) {
+            console.error('Error updating audio volume:', error);
         }
     }, [isSoundEnabled, volume, isInitialized]);
 
@@ -61,7 +74,7 @@ export const useGameAudio = () => {
         try {
             await backgroundPlayer.play();
             setIsBackgroundMusicPlaying(true);
-            console.log('Background music started (covers game sounds)');
+            console.log('Background music started');
         } catch (error) {
             console.error('Error playing background music:', error);
         }
@@ -84,14 +97,17 @@ export const useGameAudio = () => {
 
         try {
             await stopBackgroundMusic();
-
             await gameOverPlayer.play();
             console.log('Game over sound played');
 
             setTimeout(async () => {
-                await gameOverPlayer.pause();
-                if (isSoundEnabled) {
-                    await playBackgroundMusic();
+                try {
+                    await gameOverPlayer.pause();
+                    if (isSoundEnabled) {
+                        await playBackgroundMusic();
+                    }
+                } catch (error) {
+                    console.error('Error in game over sound timeout:', error);
                 }
             }, 3000);
         } catch (error) {

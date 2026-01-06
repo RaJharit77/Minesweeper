@@ -31,28 +31,28 @@ export default function HelpScreen() {
 
                 <View className="bg-gray-800 rounded-xl p-5 mb-5">
                     <Text className="text-blue-400 text-xl font-bold mb-4">🧩 Comment jouer</Text>
-                    
+
                     <View className="flex-row items-center mb-3">
                         <Ionicons name="square-outline" size={20} color="#1bb5fc" />
                         <Text className="text-gray-200 text-base ml-2.5 flex-1">
                             Cliquez sur une case pour la révéler.
                         </Text>
                     </View>
-                    
+
                     <View className="flex-row items-center mb-3">
                         <Text className="text-xl mr-2.5">1️⃣</Text>
                         <Text className="text-gray-200 text-base flex-1">
                             Les nombres indiquent combien de bombes se trouvent dans les cases adjacentes.
                         </Text>
                     </View>
-                    
+
                     <View className="flex-row items-center mb-3">
                         <Ionicons name="alert-circle" size={20} color="#FF3B3B" />
                         <Text className="text-gray-200 text-base ml-2.5 flex-1">
                             Si vous cliquez sur une bombe, la partie est perdue.
                         </Text>
                     </View>
-                    
+
                     <View className="flex-row items-center">
                         <Ionicons name="flag" size={20} color="#00B300" />
                         <Text className="text-gray-200 text-base ml-2.5 flex-1">
@@ -63,17 +63,17 @@ export default function HelpScreen() {
 
                 <View className="bg-gray-800 rounded-xl p-5 mb-5">
                     <Text className="text-blue-400 text-xl font-bold mb-4">🎮 Niveaux de difficulté</Text>
-                    
+
                     <View className="bg-gray-700 rounded-lg p-4 mb-2.5">
                         <Text className="text-blue-400 text-lg font-bold mb-1">Facile</Text>
                         <Text className="text-gray-400 text-sm">10×10 cases, 20 bombes</Text>
                     </View>
-                    
+
                     <View className="bg-gray-700 rounded-lg p-4 mb-2.5">
                         <Text className="text-blue-400 text-lg font-bold mb-1">Medium</Text>
                         <Text className="text-gray-400 text-sm">20×20 cases, 40 bombes</Text>
                     </View>
-                    
+
                     <View className="bg-gray-700 rounded-lg p-4">
                         <Text className="text-blue-400 text-lg font-bold mb-1">Difficile</Text>
                         <Text className="text-gray-400 text-sm">40×40 cases, 60 bombes</Text>

@@ -11,10 +11,10 @@ export const SoundControl = () => {
             className="absolute top-16 right-5 bg-gray-800 p-3 rounded-lg flex-row items-center"
             onPress={toggleBackgroundMusic}
         >
-            <Ionicons 
-                name={isBackgroundMusicPlaying ? "volume-high" : "volume-mute"} 
-                size={24} 
-                color="#1bb5fc" 
+            <Ionicons
+                name={isBackgroundMusicPlaying ? "volume-high" : "volume-mute"}
+                size={24}
+                color="#1bb5fc"
             />
             <Text className="text-blue-400 ml-2 text-sm font-medium">
                 {isBackgroundMusicPlaying ? 'Musique ON' : 'Musique OFF'}

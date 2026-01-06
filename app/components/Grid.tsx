@@ -7,7 +7,7 @@ const Grid: React.FC<GridProps> = ({ grid, onCellPress, gameOver, cellSize }) =>
     const gridSize = grid.length;
 
     return (
-        <View 
+        <View
             className="flex-row flex-wrap"
             style={{ width: gridSize * cellSize }}
         >

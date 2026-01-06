@@ -28,6 +28,7 @@ export default function OptionsScreen() {
         toggleSound,
         setLevel,
         saveSettings,
+        clearGameState,
     } = useGameStore();
 
     const [localVolume, setLocalVolume] = useState(volume);
@@ -53,8 +54,6 @@ export default function OptionsScreen() {
             setTimeout(async () => {
                 await stopBackgroundMusic();
             }, 7000);
-
-            // Alert.alert('Test Audio', 'Le son de test durera 7 secondes');
         } catch (error) {
             console.log('Error playing test sound:', error);
             Alert.alert('Erreur', 'Impossible de jouer le son');
@@ -64,13 +63,7 @@ export default function OptionsScreen() {
     const testVibration = () => {
         if (localVibration) {
             try {
-                if (Platform.OS === 'android') {
-                    Vibration.vibrate([0, 1000, 200, 1000, 200, 1000]);
-                } else {
-                    Vibration.vibrate(2000);
-                }
-
-                // Alert.alert('Test Vibration', 'Vibration de test activée (plus intense)');
+                Vibration.vibrate(500);
             } catch (error) {
                 console.error('Error testing vibration:', error);
                 Alert.alert('Erreur', 'Les vibrations ne sont pas disponibles sur cet appareil');
@@ -101,15 +94,29 @@ export default function OptionsScreen() {
 
         if (localVibration) {
             try {
-                if (Platform.OS === 'android') {
-                    Vibration.vibrate([0, 100, 50, 100]);
-                } else {
-                    Vibration.vibrate(100);
-                }
+                Vibration.vibrate(100);
             } catch (error) {
                 console.log('Erreur de vibration lors de la sauvegarde:', error);
             }
         }
+    };
+
+    const handleClearSavedGame = () => {
+        Alert.alert(
+            'Effacer la sauvegarde',
+            'Voulez-vous vraiment effacer la partie sauvegardée ?',
+            [
+                { text: 'Annuler', style: 'cancel' },
+                {
+                    text: 'Effacer',
+                    style: 'destructive',
+                    onPress: () => {
+                        clearGameState();
+                        Alert.alert('Succès', 'Partie sauvegardée effacée.');
+                    }
+                },
+            ]
+        );
     };
 
     const handleCancel = () => {
@@ -428,6 +435,36 @@ export default function OptionsScreen() {
                             </View>
                         </View>
                     </View>
+                </View>
+
+                <View className="bg-gray-800 rounded-2xl p-6 mb-6 shadow-lg">
+                    <View className="flex-row items-start mb-6">
+                        <View className="bg-yellow-900 p-3 rounded-xl mr-4 mt-1">
+                            <Ionicons name="save" size={28} color="#fbbf24" />
+                        </View>
+                        <View className="flex-1">
+                            <Text className="text-blue-400 text-xl font-bold mb-1">Sauvegarde</Text>
+                            <Text className="text-gray-400 text-sm leading-tight max-w-[90%]">
+                                Gérer les données sauvegardées
+                            </Text>
+                        </View>
+                    </View>
+
+                    <TouchableOpacity
+                        className="bg-red-500 py-4 rounded-xl items-center w-full active:opacity-90 mb-4"
+                        onPress={handleClearSavedGame}
+                    >
+                        <View className="flex-row items-center">
+                            <Ionicons name="trash-outline" size={24} color="white" />
+                            <Text className="text-white text-base font-bold ml-3">
+                                Effacer la partie sauvegardée
+                            </Text>
+                        </View>
+                    </TouchableOpacity>
+
+                    <Text className="text-gray-400 text-sm text-center">
+                        La partie est automatiquement sauvegardée pendant le jeu
+                    </Text>
                 </View>
 
                 <View className="flex-row justify-between">

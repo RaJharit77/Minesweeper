@@ -1,10 +1,35 @@
-import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useGameStore } from '../../store/useSettingsStore';
 
 export default function MenuScreen() {
     const router = useRouter();
+    const { savedGrid, savedGameOver, clearGameState, isLoading } = useGameStore();
+    const [hasSavedGame, setHasSavedGame] = useState(false);
+
+    useEffect(() => {
+        setHasSavedGame(!!savedGrid && !savedGameOver);
+    }, [savedGrid, savedGameOver]);
+
+    const handleNewGame = () => {
+        clearGameState();
+        router.push('/game');
+    };
+
+    const handleContinueGame = () => {
+        router.push('/game');
+    };
+
+    if (isLoading) {
+        return (
+            <View className="flex-1 bg-gray-900 justify-center items-center">
+                <ActivityIndicator size="large" color="#1bb5fc" />
+                <Text className="text-blue-400 mt-4">Chargement...</Text>
+            </View>
+        );
+    }
 
     return (
         <View className="flex-1 bg-gray-900 justify-between items-center py-12 px-5">
@@ -21,7 +46,7 @@ export default function MenuScreen() {
             <View className="w-full max-w-md">
                 <TouchableOpacity
                     className="bg-gray-800 flex-row items-center p-5 rounded-xl mb-4 border border-blue-400"
-                    onPress={() => router.push('/game')}
+                    onPress={handleNewGame}
                 >
                     <Ionicons name="play-circle" size={24} color="white" />
                     <Text className="text-white text-lg font-medium ml-4 flex-1">
@@ -29,15 +54,18 @@ export default function MenuScreen() {
                     </Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity
-                    className="bg-gray-800 flex-row items-center p-5 rounded-xl mb-4 border border-blue-400"
-                    onPress={() => router.push('/game')}
-                >
-                    <Ionicons name="play" size={24} color="white" />
-                    <Text className="text-white text-lg font-medium ml-4 flex-1">
-                        Continuer le jeu
-                    </Text>
-                </TouchableOpacity>
+                {hasSavedGame && (
+                    <TouchableOpacity
+                        className="bg-gray-800 flex-row items-center p-5 rounded-xl mb-4 border border-green-400"
+                        onPress={handleContinueGame}
+                    >
+                        <Ionicons name="play" size={24} color="white" />
+                        <Text className="text-white text-lg font-medium ml-4 flex-1">
+                            Continuer le jeu
+                        </Text>
+                        <Ionicons name="download" size={20} color="#00B300" />
+                    </TouchableOpacity>
+                )}
 
                 <TouchableOpacity
                     className="bg-gray-800 flex-row items-center p-5 rounded-xl mb-4 border border-blue-400"
