@@ -378,7 +378,7 @@ export default function OptionsScreen() {
 
                     <View className="bg-gray-700/50 rounded-xl p-5 border border-gray-600">
                         <Text className="text-blue-400 text-lg font-bold mb-4 text-center">
-                            📊 Détails du niveau
+                            Détails du niveau
                         </Text>
 
                         <View className="space-y-3">
