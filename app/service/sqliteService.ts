@@ -8,27 +8,56 @@ export interface GameStateRecord {
     createdAt?: string;
 }
 
-const DATABASE_NAME = 'minesweeper.db';
+const DATABASE_NAME = 'game.db';
 
 class SqliteService {
     private db: SQLite.SQLiteDatabase | null = null;
     private isInitialized = false;
+    private initializationPromise: Promise<void> | null = null;
 
     async initialize(): Promise<void> {
+        if (this.initializationPromise) {
+            return this.initializationPromise;
+        }
+
+        this.initializationPromise = this.initializeInternal();
+        return this.initializationPromise;
+    }
+
+    private async initializeInternal(): Promise<void> {
         if (this.isInitialized) {
             return;
         }
 
         try {
-            console.log('Opening SQLite database...');
-            this.db = await SQLite.openDatabaseAsync(DATABASE_NAME);
+            if (__DEV__) {
+                console.log('🔄 Opening SQLite database...');
+            }
+
+            this.db = await SQLite.openDatabaseAsync(DATABASE_NAME, {
+                useNewConnection: true
+            });
+
+            if (__DEV__) {
+                console.log('✅ SQLite database opened successfully');
+            }
+
             await this.createTable();
             this.isInitialized = true;
-            console.log('SQLite database initialized successfully');
+
+            if (__DEV__) {
+                console.log('✅ SQLite database initialized successfully');
+            }
+
         } catch (error) {
-            console.error('Error initializing SQLite database:', error);
+            if (__DEV__) {
+                console.error('❌ Error initializing SQLite database:', error);
+            }
+
             this.isInitialized = false;
-            throw error;
+            this.db = null;
+
+            throw new Error('SQLite initialization failed: ' + (error instanceof Error ? error.message : 'Unknown error'));
         }
     }
 
@@ -37,86 +66,145 @@ class SqliteService {
             throw new Error('Database not initialized');
         }
 
-        await this.db.execAsync(`
-            CREATE TABLE IF NOT EXISTS game_state (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                grid TEXT NOT NULL,
-                gameOver INTEGER NOT NULL,
-                gameTime INTEGER NOT NULL,
-                createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
-            );
-        `);
-    }
+        try {
+            await this.db.execAsync(`
+                CREATE TABLE IF NOT EXISTS game_state (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    grid TEXT NOT NULL,
+                    gameOver INTEGER NOT NULL,
+                    gameTime INTEGER NOT NULL,
+                    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+                );
+            `);
 
-    private async ensureInitialized(): Promise<void> {
-        if (!this.isInitialized || !this.db) {
-            await this.initialize();
+            if (__DEV__) {
+                console.log('✅ Table created or already exists');
+            }
+        } catch (error) {
+            if (__DEV__) {
+                console.error('❌ Error creating table:', error);
+            }
+            throw error;
         }
     }
 
-    async saveGameState(grid: any, gameOver: boolean, gameTime: number): Promise<void> {
-        await this.ensureInitialized();
-
+    private async ensureInitialized(): Promise<boolean> {
         try {
+            await this.initialize();
+            return this.isInitialized && this.db !== null;
+        } catch (error) {
+            if (__DEV__) {
+                console.warn('⚠️ SQLite not available, using fallback storage');
+            }
+            return false;
+        }
+    }
+
+    async saveGameState(grid: any, gameOver: boolean, gameTime: number): Promise<boolean> {
+        try {
+            const isAvailable = await this.ensureInitialized();
+
+            if (!isAvailable || !this.db) {
+                return false;
+            }
+
             const serializedGrid = JSON.stringify(grid);
 
-            // Supprimer les anciennes sauvegardes
-            await this.db!.runAsync('DELETE FROM game_state');
+            await this.db.runAsync('DELETE FROM game_state');
 
-            // Insérer la nouvelle sauvegarde
-            await this.db!.runAsync(
+            await this.db.runAsync(
                 'INSERT INTO game_state (grid, gameOver, gameTime) VALUES (?, ?, ?)',
                 [serializedGrid, gameOver ? 1 : 0, gameTime]
             );
 
-            console.log('Game state saved to SQLite');
+            if (__DEV__) {
+                console.log('✅ Game state saved to SQLite');
+            }
+            return true;
+
         } catch (error) {
-            console.error('Error saving game state to SQLite:', error);
-            // Réessayer l'initialisation
+            if (__DEV__) {
+                console.error('❌ Error saving game state to SQLite:', error);
+            }
             this.isInitialized = false;
-            throw error;
+            this.db = null;
+            return false;
         }
     }
 
     async loadGameState(): Promise<GameStateRecord | null> {
-        await this.ensureInitialized();
-
         try {
-            const result = await this.db!.getFirstAsync<GameStateRecord>(
+            const isAvailable = await this.ensureInitialized();
+
+            if (!isAvailable || !this.db) {
+                return null;
+            }
+
+            const result = await this.db.getFirstAsync<GameStateRecord>(
                 'SELECT * FROM game_state ORDER BY id DESC LIMIT 1'
             );
 
             if (result) {
-                console.log('Game state loaded from SQLite');
+                if (__DEV__) {
+                    console.log('✅ Game state loaded from SQLite');
+                }
                 return result;
             }
+
+            if (__DEV__) {
+                console.log('ℹ️ No saved game found in SQLite');
+            }
             return null;
+
         } catch (error) {
-            console.error('Error loading game state from SQLite:', error);
+            if (__DEV__) {
+                console.error('❌ Error loading game state from SQLite:', error);
+            }
             this.isInitialized = false;
+            this.db = null;
             return null;
         }
     }
 
-    async clearGameState(): Promise<void> {
-        await this.ensureInitialized();
-
+    async clearGameState(): Promise<boolean> {
         try {
-            await this.db!.runAsync('DELETE FROM game_state');
-            console.log('Game state cleared from SQLite');
+            const isAvailable = await this.ensureInitialized();
+
+            if (!isAvailable || !this.db) {
+                return false;
+            }
+
+            await this.db.runAsync('DELETE FROM game_state');
+
+            if (__DEV__) {
+                console.log('✅ Game state cleared from SQLite');
+            }
+            return true;
+
         } catch (error) {
-            console.error('Error clearing game state from SQLite:', error);
-            this.isInitialized = false;
-            throw error;
+            if (__DEV__) {
+                console.error('❌ Error clearing game state from SQLite:', error);
+            }
+            return false;
         }
     }
 
     async close(): Promise<void> {
         if (this.db) {
-            await this.db.closeAsync();
-            this.db = null;
-            this.isInitialized = false;
-            console.log('SQLite database closed');
+            try {
+                await this.db.closeAsync();
+                if (__DEV__) {
+                    console.log('✅ SQLite database closed');
+                }
+            } catch (error) {
+                if (__DEV__) {
+                    console.error('❌ Error closing database:', error);
+                }
+            } finally {
+                this.db = null;
+                this.isInitialized = false;
+                this.initializationPromise = null;
+            }
         }
     }
 }

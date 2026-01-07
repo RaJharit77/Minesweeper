@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { persistStorage } from './persistStorage';
-import { sqliteService } from '../service/sqliteService';
+import { sqliteService } from '../../app/service/sqliteService';
 
 export type Level = 'easy' | 'medium' | 'difficult';
 
@@ -17,7 +17,7 @@ interface GameState {
     savedGameOver: boolean;
     savedGameTime: number;
     isLoading: boolean;
-    sqliteError: boolean;
+    isSqliteAvailable: boolean;
 }
 
 interface GameStore extends GameSettings, GameState {
@@ -30,7 +30,9 @@ interface GameStore extends GameSettings, GameState {
     saveSettings: (settings: Partial<GameSettings>) => void;
     loadSavedGame: () => Promise<void>;
     setLoading: (loading: boolean) => void;
-    setSqliteError: (error: boolean) => void;
+    setSqliteAvailable: (available: boolean) => void;
+    sqliteError: string | null;
+    clearSqliteError: () => void;
 }
 
 export const useGameStore = create<GameStore>()(
@@ -45,7 +47,8 @@ export const useGameStore = create<GameStore>()(
             savedGameOver: false,
             savedGameTime: 0,
             isLoading: false,
-            sqliteError: false,
+            isSqliteAvailable: true,
+            sqliteError: null as string | null,
 
             setVolume: (volume) => set({ volume }),
 
@@ -63,41 +66,54 @@ export const useGameStore = create<GameStore>()(
                 try {
                     const serializedGrid = JSON.stringify(grid);
 
-                    // Essayer d'abord avec SQLite
-                    try {
-                        await sqliteService.saveGameState(grid, gameOver, gameTime);
-                        console.log('✅ Game state saved to SQLite');
-                    } catch (sqliteError) {
-                        console.error('❌ SQLite save failed, using fallback:', sqliteError);
-                        set({ sqliteError: true });
-                        // Fallback: sauvegarder dans AsyncStorage
-                        // La grille est déjà sérialisée
-                    }
-
-                    // Mise à jour du state local
                     set({
                         savedGrid: serializedGrid,
                         savedGameOver: gameOver,
                         savedGameTime: gameTime
                     });
+
+                    if (get().isSqliteAvailable) {
+                        try {
+                            const success = await sqliteService.saveGameState(grid, gameOver, gameTime);
+
+                            if (!success) {
+                                set({ isSqliteAvailable: false, sqliteError: 'Failed to save to SQLite' });
+                            }
+                        } catch (sqliteError) {
+                            if (__DEV__) {
+                                console.error('❌ SQLite save failed:', sqliteError);
+                            }
+                            set({
+                                isSqliteAvailable: false,
+                                sqliteError: sqliteError instanceof Error ? sqliteError.message : 'Unknown SQLite error'
+                            });
+                        }
+                    }
+
                 } catch (error) {
-                    console.error('Error saving game state:', error);
+                    if (__DEV__) {
+                        console.error('❌ Error saving game state:', error);
+                    }
                 }
             },
 
             clearGameState: async () => {
-                try {
-                    await sqliteService.clearGameState();
-                } catch (error) {
-                    console.error('Error clearing game state from SQLite:', error);
-                }
-
                 set({
                     savedGrid: null,
                     savedGameOver: false,
-                    savedGameTime: 0,
-                    sqliteError: false
+                    savedGameTime: 0
                 });
+
+                if (get().isSqliteAvailable) {
+                    try {
+                        await sqliteService.clearGameState();
+                    } catch (error) {
+                        if (__DEV__) {
+                            console.error('❌ Error clearing SQLite:', error);
+                        }
+                        set({ isSqliteAvailable: false });
+                    }
+                }
             },
 
             saveSettings: (settings) => set((state) => ({
@@ -109,42 +125,50 @@ export const useGameStore = create<GameStore>()(
                 try {
                     set({ isLoading: true });
 
-                    // Essayer d'abord SQLite
-                    try {
-                        const savedGame = await sqliteService.loadGameState();
+                    if (get().isSqliteAvailable) {
+                        try {
+                            const savedGame = await sqliteService.loadGameState();
 
-                        if (savedGame) {
+                            if (savedGame) {
+                                set({
+                                    savedGrid: savedGame.grid,
+                                    savedGameOver: savedGame.gameOver === 1,
+                                    savedGameTime: savedGame.gameTime,
+                                    isSqliteAvailable: true,
+                                    sqliteError: null
+                                });
+                                return;
+                            }
+                        } catch (sqliteError) {
+                            if (__DEV__) {
+                                console.error('❌ SQLite load failed, using AsyncStorage:', sqliteError);
+                            }
                             set({
-                                savedGrid: savedGame.grid,
-                                savedGameOver: savedGame.gameOver === 1,
-                                savedGameTime: savedGame.gameTime,
-                                sqliteError: false
+                                isSqliteAvailable: false,
+                                sqliteError: sqliteError instanceof Error ? sqliteError.message : 'SQLite load failed'
                             });
-                            console.log('✅ Game state loaded from SQLite');
-                            return;
                         }
-                    } catch (sqliteError) {
-                        console.error('❌ SQLite load failed:', sqliteError);
-                        set({ sqliteError: true });
                     }
 
-                    // Si SQLite échoue ou aucune donnée, utiliser AsyncStorage
-                    // Les paramètres sont déjà chargés par persist
-                    console.log('ℹ️ No game state found in SQLite or fallback used');
+                    if (__DEV__) {
+                        console.log('ℹ️ Using AsyncStorage data');
+                    }
 
                 } catch (error) {
-                    console.error('Error loading game state:', error);
-                    set({ sqliteError: true });
+                    if (__DEV__) {
+                        console.error('❌ Error loading game state:', error);
+                    }
                 } finally {
                     set({ isLoading: false });
                 }
             },
 
             setLoading: (loading) => set({ isLoading: loading }),
-            setSqliteError: (error) => set({ sqliteError: error }),
+            setSqliteAvailable: (available) => set({ isSqliteAvailable: available }),
+            clearSqliteError: () => set({ sqliteError: null }),
         }),
         {
-            name: 'game-settings-storage',
+            name: 'game-storage',
             storage: createJSONStorage(() => persistStorage),
             version: 1,
             partialize: (state) => ({
@@ -155,6 +179,7 @@ export const useGameStore = create<GameStore>()(
                 savedGrid: state.savedGrid,
                 savedGameOver: state.savedGameOver,
                 savedGameTime: state.savedGameTime,
+                isSqliteAvailable: state.isSqliteAvailable,
             }),
             migrate: (persistedState: any, version: number) => {
                 if (version === 0) {
@@ -163,6 +188,8 @@ export const useGameStore = create<GameStore>()(
                         savedGrid: null,
                         savedGameOver: false,
                         savedGameTime: 0,
+                        isSqliteAvailable: true,
+                        sqliteError: null,
                     };
                 }
                 return persistedState as GameStore;
