@@ -8,22 +8,23 @@ const configWithNativeWind = withNativeWind(config, {
     inlineRem: 16
 });
 
-configWithNativeWind.resolver.assetExts = [
-    ...configWithNativeWind.resolver.assetExts.filter(ext => ext !== 'svg'),
-    'mp3',
-    'wav',
-    'ogg',
-    'm4a',
-    'caf'
-];
+// SUPPRIME ces modifications pour éviter les problèmes
+// configWithNativeWind.resolver.assetExts = [
+//     ...configWithNativeWind.resolver.assetExts.filter(ext => ext !== 'svg'),
+//     'mp3',
+//     'wav',
+//     'ogg',
+//     'm4a',
+//     'caf'
+// ];
 
-configWithNativeWind.resolver.sourceExts = [
-    ...configWithNativeWind.resolver.sourceExts,
-    'js',
-    'jsx',
-    'ts',
-    'tsx',
-    'json'
-];
+// configWithNativeWind.resolver.sourceExts = [
+//     ...configWithNativeWind.resolver.sourceExts,
+//     'js',
+//     'jsx',
+//     'ts',
+//     'tsx',
+//     'json'
+// ];
 
 module.exports = configWithNativeWind;
