@@ -1,23 +1,12 @@
 {
     "build": {
-        "production": {
-            "android": {
-                "buildType": "apk",
-                "gradleCommand": ":app:assembleRelease",
-                "autoIncrement": true,
-                "env": {
-                    "EXPO_TARGET": "bare"
-                },
-                "cache": {
-                    "enabled": true,
-                    "key": "all",
-                    "paths": [
-                        "node_modules/**/*",
-                        ".expo-shared/**/*",
-                        ".yarn/**/*"
-                    ]
-                }
-            }
-        }
+        "development": {
+            "developmentClient": true,
+            "distribution": "internal"
+        },
+        "preview": {
+            "distribution": "internal"
+        },
+        "production": {}
     }
 }
