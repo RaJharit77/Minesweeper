@@ -2,30 +2,11 @@
     "build": {
         "development": {
             "developmentClient": true,
-            "distribution": "internal",
-            "android": {
-                "gradleCommand": ":app:assembleDebug",
-                "buildType": "debug"
-            }
+            "distribution": "internal"
         },
         "preview": {
-            "distribution": "internal",
-            "android": {
-                "buildType": "release",
-                "gradleCommand": ":app:assembleRelease",
-                "autoIncrement": true
-            }
+            "distribution": "internal"
         },
-        "production": {
-            "android": {
-                "buildType": "release",
-                "gradleCommand": ":app:bundleRelease",
-                "autoIncrement": true
-            }
-        }
-    },
-    "cli": {
-        "version": ">= 5.6.0",
-        "requireCommit": false
+        "production": {}
     }
 }
