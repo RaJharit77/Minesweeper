@@ -11,12 +11,43 @@ export const useSqliteCheck = () => {
                 await sqliteService.initialize();
 
                 const testData = { test: 'data' };
-                await sqliteService.saveGameState(testData, false, 0);
+                const saveResult = await sqliteService.saveGameState(testData, false, 0);
+
+                if (!saveResult) {
+                    throw new Error('Initial save failed');
+                }
+
                 const loaded = await sqliteService.loadGameState();
 
-                if (loaded) {
-                    setIsSqliteWorking(true);
-                    console.log('SQLite is working correctly');
+                if (loaded && loaded.id) {
+                    const updateData = { test: 'updated data' };
+                    const updateResult = await sqliteService.updateGameState(loaded.id, updateData, true, 100);
+
+                    if (!updateResult) {
+                        throw new Error('Update failed');
+                    }
+
+                    const timeUpdateResult = await sqliteService.updateGameTime(loaded.id, 200);
+
+                    if (!timeUpdateResult) {
+                        throw new Error('Time update failed');
+                    }
+
+                    const gridUpdateResult = await sqliteService.updateGrid(loaded.id, { test: 'grid updated' });
+
+                    if (!gridUpdateResult) {
+                        throw new Error('Grid update failed');
+                    }
+
+                    const reloaded = await sqliteService.loadGameState();
+
+                    if (reloaded) {
+                        setIsSqliteWorking(true);
+                        console.log('SQLite is working correctly with all CRUD operations');
+                    } else {
+                        setIsSqliteWorking(false);
+                        setError('No data loaded after update');
+                    }
                 } else {
                     setIsSqliteWorking(false);
                     setError('No data loaded from SQLite');
