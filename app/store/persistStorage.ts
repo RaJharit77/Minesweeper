@@ -23,4 +23,19 @@ export const persistStorage = {
             console.error('Error removing item from AsyncStorage:', error);
         }
     },
+    clearOldVersions: async (): Promise<void> => {
+        try {
+            const keys = await AsyncStorage.getAllKeys();
+            const oldKeys = keys.filter(key =>
+                key.startsWith('game-storage') && !key.includes('version-2')
+            );
+
+            if (oldKeys.length > 0) {
+                await AsyncStorage.multiRemove(oldKeys);
+                console.log('Old storage versions cleared');
+            }
+        } catch (error) {
+            console.error('Error clearing old storage versions:', error);
+        }
+    },
 };

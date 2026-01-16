@@ -15,12 +15,38 @@ import { Grid as GridType } from '../../types/Game';
 import { createGrid, revealCell } from '../../util/gameLogic';
 import Grid from '../../components/Grid';
 import RestartButton from '../../components/RestartButton';
-import { useGameStore } from '../../store/useSettingsStore';
+import { useGameStore, Level } from '../../store/useSettingsStore';
 import { getLevelConfig } from '../../constants/Game';
 import { Ionicons } from '@expo/vector-icons';
 import { useGameAudio } from '../../hooks/useGameAudio';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+const getLevelDisplayName = (level: Level): string => {
+    switch (level) {
+        case 'easy':
+            return 'Facile';
+        case 'medium':
+            return 'Moyen';
+        case 'difficult':
+            return 'Difficile';
+        default:
+            return level;
+    }
+};
+
+const getLevelEmoji = (level: Level): string => {
+    switch (level) {
+        case 'easy':
+            return '😊';
+        case 'medium':
+            return '😐';
+        case 'difficult':
+            return '😰';
+        default:
+            return '🎮';
+    }
+};
 
 const GameScreen: React.FC = () => {
     const router = useRouter();
@@ -31,7 +57,11 @@ const GameScreen: React.FC = () => {
         isSoundEnabled,
         savedGrid,
         savedGameOver,
+        savedGameId,
         saveGameState,
+        updateGameState,
+        updateGameTime,
+        updateGrid,
         clearGameState
     } = useGameStore();
     const levelConfig = getLevelConfig(level);
@@ -65,11 +95,20 @@ const GameScreen: React.FC = () => {
     const gameTimeRef = useRef(0);
     const gameTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const { isLoading } = useGameStore();
+    const lastSaveRef = useRef<number>(0);
 
     useEffect(() => {
         const saveCurrentGame = () => {
             if (!gameOver) {
-                saveGameState(grid, gameOver, gameTimeRef.current);
+                const currentTime = Date.now();
+                if (currentTime - lastSaveRef.current > 5000) {
+                    if (savedGameId) {
+                        updateGameState(grid, gameOver, gameTimeRef.current);
+                    } else {
+                        saveGameState(grid, gameOver, gameTimeRef.current);
+                    }
+                    lastSaveRef.current = currentTime;
+                }
             }
         };
 
@@ -78,12 +117,15 @@ const GameScreen: React.FC = () => {
         return () => {
             clearInterval(saveInterval);
         };
-    }, [grid, gameOver, saveGameState]);
+    }, [grid, gameOver, saveGameState, updateGameState, savedGameId]);
 
     useEffect(() => {
         if (!gameOver) {
             gameTimerRef.current = setInterval(() => {
                 gameTimeRef.current += 1;
+                if (savedGameId && gameTimeRef.current % 5 === 0) {
+                    updateGameTime(gameTimeRef.current);
+                }
             }, 1000);
         } else {
             if (gameTimerRef.current) {
@@ -98,7 +140,7 @@ const GameScreen: React.FC = () => {
                 gameTimerRef.current = null;
             }
         };
-    }, [gameOver]);
+    }, [gameOver, savedGameId, updateGameTime]);
 
     useEffect(() => {
         if (isSoundEnabled) {
@@ -117,6 +159,8 @@ const GameScreen: React.FC = () => {
             setShowZoomControls(false);
         }
 
+        lastSaveRef.current = Date.now();
+
         return () => {
             stopBackgroundMusic();
             stopGameOverSound();
@@ -134,7 +178,11 @@ const GameScreen: React.FC = () => {
 
         if (newGrid[x][y].isBomb) {
             setGameOver(true);
-            saveGameState(newGrid, true, gameTimeRef.current);
+            if (savedGameId) {
+                updateGameState(newGrid, true, gameTimeRef.current);
+            } else {
+                saveGameState(newGrid, true, gameTimeRef.current);
+            }
 
             await playGameOverSound();
 
@@ -159,8 +207,14 @@ const GameScreen: React.FC = () => {
             return;
         }
 
-        setGrid([...newGrid]);
-        saveGameState([...newGrid], false, gameTimeRef.current);
+        const updatedGrid = [...newGrid];
+        setGrid(updatedGrid);
+
+        if (savedGameId) {
+            updateGrid(updatedGrid);
+        } else {
+            saveGameState(updatedGrid, false, gameTimeRef.current);
+        }
     };
 
     const handleRestart = async () => {
@@ -169,23 +223,11 @@ const GameScreen: React.FC = () => {
         setGrid(newGrid);
         setGameOver(false);
         gameTimeRef.current = 0;
+        lastSaveRef.current = Date.now();
         clearGameState();
 
         if (!isBackgroundMusicPlaying && isSoundEnabled) {
             await playBackgroundMusic();
-        }
-    };
-
-    const handleContinueGame = () => {
-        if (savedGrid && !savedGameOver) {
-            try {
-                const parsedGrid = JSON.parse(savedGrid);
-                setGrid(parsedGrid);
-                setGameOver(false);
-            } catch (error) {
-                console.error('Error loading saved game:', error);
-                handleRestart();
-            }
         }
     };
 
@@ -222,7 +264,14 @@ const GameScreen: React.FC = () => {
                 </TouchableOpacity>
 
                 <View className="items-end">
-                    <Text className="text-blue-400 text-base font-bold">Niveau: {level}</Text>
+                    <View className="flex-row items-center">
+                        <Text className="text-blue-400 text-base font-bold mr-1">
+                            {getLevelEmoji(level)}
+                        </Text>
+                        <Text className="text-blue-400 text-base font-bold">
+                            Niveau: {getLevelDisplayName(level)}
+                        </Text>
+                    </View>
                     <Text className="text-gray-400 text-xs mt-0.5">
                         Bombes: {levelConfig.BOMBS_COUNT} | Grille: {levelConfig.GRID_SIZE}×{levelConfig.GRID_SIZE}
                     </Text>
@@ -299,16 +348,6 @@ const GameScreen: React.FC = () => {
                             <Ionicons name="refresh" size={20} color="white" />
                             <Text className="text-white text-center ml-2 text-base font-bold">Nouvelle Partie</Text>
                         </TouchableOpacity>
-
-                        {savedGrid && !savedGameOver && (
-                            <TouchableOpacity
-                                className="bg-green-400 px-6 py-4 rounded flex-row items-center justify-center min-w-[200px]"
-                                onPress={handleContinueGame}
-                            >
-                                <Ionicons name="play" size={20} color="white" />
-                                <Text className="text-white text-center ml-2 text-base font-bold">Continuer</Text>
-                            </TouchableOpacity>
-                        )}
                     </>
                 )}
 

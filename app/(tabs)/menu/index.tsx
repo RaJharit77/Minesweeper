@@ -6,12 +6,12 @@ import { useGameStore } from '../../store/useSettingsStore';
 
 export default function MenuScreen() {
     const router = useRouter();
-    const { savedGrid, savedGameOver, clearGameState, isLoading } = useGameStore();
+    const { savedGrid, savedGameOver, clearGameState, isLoading, savedGameId } = useGameStore();
     const [hasSavedGame, setHasSavedGame] = useState(false);
 
     useEffect(() => {
-        setHasSavedGame(!!savedGrid && !savedGameOver);
-    }, [savedGrid, savedGameOver]);
+        setHasSavedGame(!!savedGameId && !!savedGrid && !savedGameOver);
+    }, [savedGrid, savedGameOver, savedGameId]);
 
     const handleNewGame = () => {
         clearGameState();
@@ -63,7 +63,10 @@ export default function MenuScreen() {
                         <Text className="text-white text-lg font-medium ml-4 flex-1">
                             Continuer le jeu
                         </Text>
-                        <Ionicons name="download" size={20} color="#00B300" />
+                        <View className="flex-row items-center">
+                            <Ionicons name="download" size={20} color="#00B300" />
+                            <Text className="text-green-400 text-xs ml-1">ID: {savedGameId}</Text>
+                        </View>
                     </TouchableOpacity>
                 )}
 
@@ -92,6 +95,11 @@ export default function MenuScreen() {
                 <Text className="text-gray-400 text-sm">
                     © {new Date().getFullYear()} Mineswipper - RaJharit77
                 </Text>
+                {savedGameId && (
+                    <Text className="text-gray-600 text-xs mt-1">
+                        Game ID: {savedGameId}
+                    </Text>
+                )}
             </View>
         </View>
     );

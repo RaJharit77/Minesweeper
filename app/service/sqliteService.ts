@@ -110,17 +110,25 @@ class SqliteService {
 
             const serializedGrid = JSON.stringify(grid);
 
-            await this.db.runAsync('DELETE FROM game_state');
-
-            await this.db.runAsync(
-                'INSERT INTO game_state (grid, gameOver, gameTime) VALUES (?, ?, ?)',
-                [serializedGrid, gameOver ? 1 : 0, gameTime]
+            const existingRecord = await this.db.getFirstAsync<GameStateRecord>(
+                'SELECT * FROM game_state ORDER BY id DESC LIMIT 1'
             );
 
-            if (__DEV__) {
-                console.log('Game state saved to SQLite');
+            if (existingRecord && existingRecord.id) {
+                return await this.updateGameState(existingRecord.id, grid, gameOver, gameTime);
+            } else {
+                await this.db.runAsync('DELETE FROM game_state');
+
+                await this.db.runAsync(
+                    'INSERT INTO game_state (grid, gameOver, gameTime) VALUES (?, ?, ?)',
+                    [serializedGrid, gameOver ? 1 : 0, gameTime]
+                );
+
+                if (__DEV__) {
+                    console.log('Game state saved to SQLite (new record)');
+                }
+                return true;
             }
-            return true;
 
         } catch (error) {
             if (__DEV__) {
@@ -128,6 +136,91 @@ class SqliteService {
             }
             this.isInitialized = false;
             this.db = null;
+            return false;
+        }
+    }
+
+    async updateGameState(id: number, grid: any, gameOver: boolean, gameTime: number): Promise<boolean> {
+        try {
+            const isAvailable = await this.ensureInitialized();
+
+            if (!isAvailable || !this.db) {
+                return false;
+            }
+
+            const serializedGrid = JSON.stringify(grid);
+
+            const result = await this.db.runAsync(
+                'UPDATE game_state SET grid = ?, gameOver = ?, gameTime = ?, createdAt = CURRENT_TIMESTAMP WHERE id = ?',
+                [serializedGrid, gameOver ? 1 : 0, gameTime, id]
+            );
+
+            if (__DEV__) {
+                console.log(`Game state updated in SQLite for id ${id}:`, result.changes > 0 ? 'Success' : 'No changes');
+            }
+
+            return result.changes > 0;
+
+        } catch (error) {
+            if (__DEV__) {
+                console.error('Error updating game state in SQLite:', error);
+            }
+            return false;
+        }
+    }
+
+    async updateGameTime(id: number, gameTime: number): Promise<boolean> {
+        try {
+            const isAvailable = await this.ensureInitialized();
+
+            if (!isAvailable || !this.db) {
+                return false;
+            }
+
+            const result = await this.db.runAsync(
+                'UPDATE game_state SET gameTime = ?, createdAt = CURRENT_TIMESTAMP WHERE id = ?',
+                [gameTime, id]
+            );
+
+            if (__DEV__) {
+                console.log(`Game time updated for id ${id}`);
+            }
+
+            return result.changes > 0;
+
+        } catch (error) {
+            if (__DEV__) {
+                console.error('Error updating game time in SQLite:', error);
+            }
+            return false;
+        }
+    }
+
+    async updateGrid(id: number, grid: any): Promise<boolean> {
+        try {
+            const isAvailable = await this.ensureInitialized();
+
+            if (!isAvailable || !this.db) {
+                return false;
+            }
+
+            const serializedGrid = JSON.stringify(grid);
+
+            const result = await this.db.runAsync(
+                'UPDATE game_state SET grid = ?, createdAt = CURRENT_TIMESTAMP WHERE id = ?',
+                [serializedGrid, id]
+            );
+
+            if (__DEV__) {
+                console.log(`Grid updated for id ${id}`);
+            }
+
+            return result.changes > 0;
+
+        } catch (error) {
+            if (__DEV__) {
+                console.error('Error updating grid in SQLite:', error);
+            }
             return false;
         }
     }

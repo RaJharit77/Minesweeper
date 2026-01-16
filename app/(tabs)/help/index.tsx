@@ -18,11 +18,11 @@ export default function HelpScreen() {
 
             <ScrollView contentContainerClassName="p-5 pb-10">
                 <Text className="text-3xl font-bold text-blue-400 mb-7 text-center">
-                    Aide - Règles du Démineur
+                    📖 Aide - Règles du Démineur
                 </Text>
 
                 <View className="bg-gray-800 rounded-xl p-5 mb-5">
-                    <Text className="text-blue-400 text-xl font-bold mb-4">Objectif du jeu</Text>
+                    <Text className="text-blue-400 text-xl font-bold mb-4">🎯 Objectif du jeu</Text>
                     <Text className="text-gray-200 text-base leading-relaxed">
                         Le but du jeu est de découvrir toutes les cases qui ne contiennent pas de mines,
                         sans faire exploser aucune bombe.
@@ -30,7 +30,7 @@ export default function HelpScreen() {
                 </View>
 
                 <View className="bg-gray-800 rounded-xl p-5 mb-5">
-                    <Text className="text-blue-400 text-xl font-bold mb-4">Comment jouer</Text>
+                    <Text className="text-blue-400 text-xl font-bold mb-4">🧩 Comment jouer</Text>
 
                     <View className="flex-row items-center mb-3">
                         <Ionicons name="square-outline" size={20} color="#1bb5fc" />
@@ -40,7 +40,7 @@ export default function HelpScreen() {
                     </View>
 
                     <View className="flex-row items-center mb-3">
-                        <Text className="text-xl mr-2.5">1</Text>
+                        <Text className="text-xl mr-2.5">1️⃣</Text>
                         <Text className="text-gray-200 text-base flex-1">
                             Les nombres indiquent combien de bombes se trouvent dans les cases adjacentes.
                         </Text>
