@@ -23,6 +23,7 @@ export default function OptionsScreen() {
         isVibrationEnabled,
         isSoundEnabled,
         level,
+        savedGameId,
         setVolume,
         toggleVibration,
         toggleSound,
@@ -104,7 +105,7 @@ export default function OptionsScreen() {
     const handleClearSavedGame = () => {
         Alert.alert(
             'Effacer la sauvegarde',
-            'Voulez-vous vraiment effacer la partie sauvegardée ?',
+            `Voulez-vous vraiment effacer la partie sauvegardée ? ${savedGameId ? `(ID: ${savedGameId})` : ''}`,
             [
                 { text: 'Annuler', style: 'cancel' },
                 {
@@ -445,7 +446,7 @@ export default function OptionsScreen() {
                         <View className="flex-1">
                             <Text className="text-blue-400 text-xl font-bold mb-1">Sauvegarde</Text>
                             <Text className="text-gray-400 text-sm leading-tight max-w-[90%]">
-                                Gérer les données sauvegardées
+                                {savedGameId ? `Partie sauvegardée (ID: ${savedGameId})` : 'Aucune partie sauvegardée'}
                             </Text>
                         </View>
                     </View>
@@ -453,17 +454,19 @@ export default function OptionsScreen() {
                     <TouchableOpacity
                         className="bg-red-500 py-4 rounded-xl items-center w-full active:opacity-90 mb-4"
                         onPress={handleClearSavedGame}
+                        disabled={!savedGameId}
                     >
                         <View className="flex-row items-center">
                             <Ionicons name="trash-outline" size={24} color="white" />
                             <Text className="text-white text-base font-bold ml-3">
-                                Effacer la partie sauvegardée
+                                {savedGameId ? 'Effacer la partie sauvegardée' : 'Aucune partie à effacer'}
                             </Text>
                         </View>
                     </TouchableOpacity>
 
                     <Text className="text-gray-400 text-sm text-center">
                         La partie est automatiquement sauvegardée pendant le jeu
+                        {savedGameId && ` (ID: ${savedGameId})`}
                     </Text>
                 </View>
 

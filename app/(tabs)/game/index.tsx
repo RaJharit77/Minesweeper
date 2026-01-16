@@ -31,7 +31,11 @@ const GameScreen: React.FC = () => {
         isSoundEnabled,
         savedGrid,
         savedGameOver,
+        savedGameId,
         saveGameState,
+        updateGameState,
+        updateGameTime,
+        updateGrid,
         clearGameState
     } = useGameStore();
     const levelConfig = getLevelConfig(level);
@@ -65,11 +69,20 @@ const GameScreen: React.FC = () => {
     const gameTimeRef = useRef(0);
     const gameTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const { isLoading } = useGameStore();
+    const lastSaveRef = useRef<number>(0);
 
     useEffect(() => {
         const saveCurrentGame = () => {
             if (!gameOver) {
-                saveGameState(grid, gameOver, gameTimeRef.current);
+                const currentTime = Date.now();
+                if (currentTime - lastSaveRef.current > 5000) {
+                    if (savedGameId) {
+                        updateGameState(grid, gameOver, gameTimeRef.current);
+                    } else {
+                        saveGameState(grid, gameOver, gameTimeRef.current);
+                    }
+                    lastSaveRef.current = currentTime;
+                }
             }
         };
 
@@ -78,12 +91,15 @@ const GameScreen: React.FC = () => {
         return () => {
             clearInterval(saveInterval);
         };
-    }, [grid, gameOver, saveGameState]);
+    }, [grid, gameOver, saveGameState, updateGameState, savedGameId]);
 
     useEffect(() => {
         if (!gameOver) {
             gameTimerRef.current = setInterval(() => {
                 gameTimeRef.current += 1;
+                if (savedGameId && gameTimeRef.current % 5 === 0) {
+                    updateGameTime(gameTimeRef.current);
+                }
             }, 1000);
         } else {
             if (gameTimerRef.current) {
@@ -98,7 +114,7 @@ const GameScreen: React.FC = () => {
                 gameTimerRef.current = null;
             }
         };
-    }, [gameOver]);
+    }, [gameOver, savedGameId, updateGameTime]);
 
     useEffect(() => {
         if (isSoundEnabled) {
@@ -117,6 +133,8 @@ const GameScreen: React.FC = () => {
             setShowZoomControls(false);
         }
 
+        lastSaveRef.current = Date.now();
+
         return () => {
             stopBackgroundMusic();
             stopGameOverSound();
@@ -134,7 +152,11 @@ const GameScreen: React.FC = () => {
 
         if (newGrid[x][y].isBomb) {
             setGameOver(true);
-            saveGameState(newGrid, true, gameTimeRef.current);
+            if (savedGameId) {
+                updateGameState(newGrid, true, gameTimeRef.current);
+            } else {
+                saveGameState(newGrid, true, gameTimeRef.current);
+            }
 
             await playGameOverSound();
 
@@ -159,8 +181,14 @@ const GameScreen: React.FC = () => {
             return;
         }
 
-        setGrid([...newGrid]);
-        saveGameState([...newGrid], false, gameTimeRef.current);
+        const updatedGrid = [...newGrid];
+        setGrid(updatedGrid);
+
+        if (savedGameId) {
+            updateGrid(updatedGrid);
+        } else {
+            saveGameState(updatedGrid, false, gameTimeRef.current);
+        }
     };
 
     const handleRestart = async () => {
@@ -169,6 +197,7 @@ const GameScreen: React.FC = () => {
         setGrid(newGrid);
         setGameOver(false);
         gameTimeRef.current = 0;
+        lastSaveRef.current = Date.now();
         clearGameState();
 
         if (!isBackgroundMusicPlaying && isSoundEnabled) {
@@ -182,6 +211,8 @@ const GameScreen: React.FC = () => {
                 const parsedGrid = JSON.parse(savedGrid);
                 setGrid(parsedGrid);
                 setGameOver(false);
+                const { savedGameTime } = useGameStore.getState();
+                gameTimeRef.current = savedGameTime;
             } catch (error) {
                 console.error('Error loading saved game:', error);
                 handleRestart();
