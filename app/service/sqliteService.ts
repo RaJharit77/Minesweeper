@@ -31,7 +31,7 @@ class SqliteService {
 
         try {
             if (__DEV__) {
-                console.log('🔄 Opening SQLite database...');
+                console.log('Opening SQLite database...');
             }
 
             this.db = await SQLite.openDatabaseAsync(DATABASE_NAME, {
@@ -39,19 +39,19 @@ class SqliteService {
             });
 
             if (__DEV__) {
-                console.log('✅ SQLite database opened successfully');
+                console.log('SQLite database opened successfully');
             }
 
             await this.createTable();
             this.isInitialized = true;
 
             if (__DEV__) {
-                console.log('✅ SQLite database initialized successfully');
+                console.log('SQLite database initialized successfully');
             }
 
         } catch (error) {
             if (__DEV__) {
-                console.error('❌ Error initializing SQLite database:', error);
+                console.error('Error initializing SQLite database:', error);
             }
 
             this.isInitialized = false;
@@ -78,11 +78,11 @@ class SqliteService {
             `);
 
             if (__DEV__) {
-                console.log('✅ Table created or already exists');
+                console.log('Table created or already exists');
             }
         } catch (error) {
             if (__DEV__) {
-                console.error('❌ Error creating table:', error);
+                console.error('Error creating table:', error);
             }
             throw error;
         }
@@ -94,7 +94,7 @@ class SqliteService {
             return this.isInitialized && this.db !== null;
         } catch (error) {
             if (__DEV__) {
-                console.warn('⚠️ SQLite not available, using fallback storage');
+                console.warn('SQLite not available, using fallback storage');
             }
             return false;
         }
@@ -118,13 +118,13 @@ class SqliteService {
             );
 
             if (__DEV__) {
-                console.log('✅ Game state saved to SQLite');
+                console.log('Game state saved to SQLite');
             }
             return true;
 
         } catch (error) {
             if (__DEV__) {
-                console.error('❌ Error saving game state to SQLite:', error);
+                console.error('Error saving game state to SQLite:', error);
             }
             this.isInitialized = false;
             this.db = null;
@@ -146,19 +146,19 @@ class SqliteService {
 
             if (result) {
                 if (__DEV__) {
-                    console.log('✅ Game state loaded from SQLite');
+                    console.log('Game state loaded from SQLite');
                 }
                 return result;
             }
 
             if (__DEV__) {
-                console.log('ℹ️ No saved game found in SQLite');
+                console.log('No saved game found in SQLite');
             }
             return null;
 
         } catch (error) {
             if (__DEV__) {
-                console.error('❌ Error loading game state from SQLite:', error);
+                console.error('Error loading game state from SQLite:', error);
             }
             this.isInitialized = false;
             this.db = null;
@@ -177,13 +177,13 @@ class SqliteService {
             await this.db.runAsync('DELETE FROM game_state');
 
             if (__DEV__) {
-                console.log('✅ Game state cleared from SQLite');
+                console.log('Game state cleared from SQLite');
             }
             return true;
 
         } catch (error) {
             if (__DEV__) {
-                console.error('❌ Error clearing game state from SQLite:', error);
+                console.error('Error clearing game state from SQLite:', error);
             }
             return false;
         }
@@ -194,11 +194,11 @@ class SqliteService {
             try {
                 await this.db.closeAsync();
                 if (__DEV__) {
-                    console.log('✅ SQLite database closed');
+                    console.log('SQLite database closed');
                 }
             } catch (error) {
                 if (__DEV__) {
-                    console.error('❌ Error closing database:', error);
+                    console.error('Error closing database:', error);
                 }
             } finally {
                 this.db = null;

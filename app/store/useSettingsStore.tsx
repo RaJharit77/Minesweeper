@@ -81,7 +81,7 @@ export const useGameStore = create<GameStore>()(
                             }
                         } catch (sqliteError) {
                             if (__DEV__) {
-                                console.error('❌ SQLite save failed:', sqliteError);
+                                console.error('SQLite save failed:', sqliteError);
                             }
                             set({
                                 isSqliteAvailable: false,
@@ -92,7 +92,7 @@ export const useGameStore = create<GameStore>()(
 
                 } catch (error) {
                     if (__DEV__) {
-                        console.error('❌ Error saving game state:', error);
+                        console.error('Error saving game state:', error);
                     }
                 }
             },
@@ -109,7 +109,7 @@ export const useGameStore = create<GameStore>()(
                         await sqliteService.clearGameState();
                     } catch (error) {
                         if (__DEV__) {
-                            console.error('❌ Error clearing SQLite:', error);
+                            console.error('Error clearing SQLite:', error);
                         }
                         set({ isSqliteAvailable: false });
                     }
@@ -141,7 +141,7 @@ export const useGameStore = create<GameStore>()(
                             }
                         } catch (sqliteError) {
                             if (__DEV__) {
-                                console.error('❌ SQLite load failed, using AsyncStorage:', sqliteError);
+                                console.error('SQLite load failed, using AsyncStorage:', sqliteError);
                             }
                             set({
                                 isSqliteAvailable: false,
@@ -151,12 +151,12 @@ export const useGameStore = create<GameStore>()(
                     }
 
                     if (__DEV__) {
-                        console.log('ℹ️ Using AsyncStorage data');
+                        console.log('Using AsyncStorage data');
                     }
 
                 } catch (error) {
                     if (__DEV__) {
-                        console.error('❌ Error loading game state:', error);
+                        console.error('Error loading game state:', error);
                     }
                 } finally {
                     set({ isLoading: false });

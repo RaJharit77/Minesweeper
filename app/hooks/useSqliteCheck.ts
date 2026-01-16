@@ -16,7 +16,7 @@ export const useSqliteCheck = () => {
 
                 if (loaded) {
                     setIsSqliteWorking(true);
-                    console.log('✅ SQLite is working correctly');
+                    console.log('SQLite is working correctly');
                 } else {
                     setIsSqliteWorking(false);
                     setError('No data loaded from SQLite');
@@ -25,7 +25,7 @@ export const useSqliteCheck = () => {
                 await sqliteService.clearGameState();
 
             } catch (err) {
-                console.error('❌ SQLite check failed:', err);
+                console.error('SQLite check failed:', err);
                 setIsSqliteWorking(false);
                 setError(err instanceof Error ? err.message : 'Unknown SQLite error');
             }
