@@ -15,12 +15,38 @@ import { Grid as GridType } from '../../types/Game';
 import { createGrid, revealCell } from '../../util/gameLogic';
 import Grid from '../../components/Grid';
 import RestartButton from '../../components/RestartButton';
-import { useGameStore } from '../../store/useSettingsStore';
+import { useGameStore, Level } from '../../store/useSettingsStore';
 import { getLevelConfig } from '../../constants/Game';
 import { Ionicons } from '@expo/vector-icons';
 import { useGameAudio } from '../../hooks/useGameAudio';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+const getLevelDisplayName = (level: Level): string => {
+    switch (level) {
+        case 'easy':
+            return 'Facile';
+        case 'medium':
+            return 'Moyen';
+        case 'difficult':
+            return 'Difficile';
+        default:
+            return level;
+    }
+};
+
+const getLevelEmoji = (level: Level): string => {
+    switch (level) {
+        case 'easy':
+            return '😊';
+        case 'medium':
+            return '😐';
+        case 'difficult':
+            return '😰';
+        default:
+            return '🎮';
+    }
+};
 
 const GameScreen: React.FC = () => {
     const router = useRouter();
@@ -205,21 +231,6 @@ const GameScreen: React.FC = () => {
         }
     };
 
-    const handleContinueGame = () => {
-        if (savedGrid && !savedGameOver) {
-            try {
-                const parsedGrid = JSON.parse(savedGrid);
-                setGrid(parsedGrid);
-                setGameOver(false);
-                const { savedGameTime } = useGameStore.getState();
-                gameTimeRef.current = savedGameTime;
-            } catch (error) {
-                console.error('Error loading saved game:', error);
-                handleRestart();
-            }
-        }
-    };
-
     const increaseZoom = () => {
         setZoom(Math.min(zoom + 0.1, 1.5));
     };
@@ -253,7 +264,14 @@ const GameScreen: React.FC = () => {
                 </TouchableOpacity>
 
                 <View className="items-end">
-                    <Text className="text-blue-400 text-base font-bold">Niveau: {level}</Text>
+                    <View className="flex-row items-center">
+                        <Text className="text-blue-400 text-base font-bold mr-1">
+                            {getLevelEmoji(level)}
+                        </Text>
+                        <Text className="text-blue-400 text-base font-bold">
+                            Niveau: {getLevelDisplayName(level)}
+                        </Text>
+                    </View>
                     <Text className="text-gray-400 text-xs mt-0.5">
                         Bombes: {levelConfig.BOMBS_COUNT} | Grille: {levelConfig.GRID_SIZE}×{levelConfig.GRID_SIZE}
                     </Text>
@@ -330,16 +348,6 @@ const GameScreen: React.FC = () => {
                             <Ionicons name="refresh" size={20} color="white" />
                             <Text className="text-white text-center ml-2 text-base font-bold">Nouvelle Partie</Text>
                         </TouchableOpacity>
-
-                        {savedGrid && !savedGameOver && (
-                            <TouchableOpacity
-                                className="bg-green-400 px-6 py-4 rounded flex-row items-center justify-center min-w-[200px]"
-                                onPress={handleContinueGame}
-                            >
-                                <Ionicons name="play" size={20} color="white" />
-                                <Text className="text-white text-center ml-2 text-base font-bold">Continuer</Text>
-                            </TouchableOpacity>
-                        )}
                     </>
                 )}
 
