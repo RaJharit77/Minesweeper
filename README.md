@@ -1,3 +1,23 @@
+# Analyse requise
+
+Je remarque que vous me demandez de générer la documentation en regardant les dépendances dans `package.json`, mais ce fichier n'est pas inclus dans votre sélection. 
+
+Pour générer une documentation complète et précise du projet Minesweeper, j'aurais besoin de :
+
+1. **package.json** - pour voir les dépendances exactes et la version d'Expo
+2. **app.json** - pour les configurations du projet
+3. La structure du répertoire `/app`
+4. Tout fichier de configuration spécifique au projet
+
+Pourriez-vous fournir le contenu du fichier `package.json` de votre projet ? Cela me permettra de créer une documentation README.md adaptée qui inclut :
+
+- Les dépendances spécifiques à votre implémentation Minesweeper
+- Les scripts disponibles
+- Les prérequis corrects
+- Les instructions d'installation pertinentes
+- Les fonctionnalités particulières du projet
+
+Une fois que vous aurez partagé le `package.json`, je pourrai générer la documentation appropriée en bloc de code markdown.
 # Welcome to your Expo app 👋
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
