@@ -16,7 +16,6 @@ A modern, cross-platform Minesweeper game built with React Native and Expo, feat
 - **💾 Local Storage** - Game progress saved using SQLite and AsyncStorage
 - **🎵 Immersive Experience** - Audio feedback and haptic vibrations
 - **🔗 Navigation** - Smooth navigation with Expo Router
-- **🌓 Dark/Light Mode** - Automatic theme switching based on system preferences
 - **⚡ Performance** - Optimized with Reanimated 2 and React 19
 
 ## 🛠 Tech Stack & Dependencies
