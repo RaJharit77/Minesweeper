@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Mineswipper",
-    "slug": "Mineswipper",
+    "slug": "mineswipper",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/mine_1.png",
