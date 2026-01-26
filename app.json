@@ -1,11 +1,11 @@
 {
   "expo": {
     "name": "Mineswipper",
-    "slug": "mineswipper",
+    "slug": "Mineswipper",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/mine_1.png",
-    "scheme": "myapp",
+    "scheme": "Mineswipper",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
