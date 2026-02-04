@@ -1,0 +1,16 @@
+{
+    "buildCommand": "expo build:web",
+    "outputDirectory": "web-build",
+    "devCommand": "expo start --web",
+    "installCommand": "npm install",
+    "framework": "create-react-app",
+    "rewrites": [
+        {
+            "source": "/:path*",
+            "destination": "/"
+        }
+    ],
+    "env": {
+        "EXPO_PUBLIC_PROJECT_ID": "1c1edf0e-305b-4fd5-8f21-e4b3e9151334"
+    }
+}
