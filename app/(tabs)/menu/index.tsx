@@ -93,7 +93,7 @@ export default function MenuScreen() {
 
             <View className="items-center">
                 <Text className="text-gray-400 text-sm">
-                    © {new Date().getFullYear()} Mineswipper - RaJharit77
+                    © 2025 - {new Date().getFullYear()} Mineswipper - RaJharit77
                 </Text>
                 {savedGameId && (
                     <Text className="text-gray-600 text-xs mt-1">
