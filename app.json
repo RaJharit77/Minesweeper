@@ -4,7 +4,7 @@
     "slug": "mineswipper",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/mine_1.png",
+    "icon": "./assets/images/icon.png",
     "scheme": "Mineswipper",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -21,9 +21,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png",
+        "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#1a1a2e"
       },
       "permissions": [
@@ -37,7 +35,7 @@
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/mine_1.png",
+      "favicon": "./assets/images/favicon.png",
       "bundler": "metro"
     },
     "plugins": [
@@ -45,7 +43,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#1a1a2e"
@@ -62,7 +60,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "1c1edf0e-305b-4fd5-8f21-e4b3e9151334"
+        "projectId": "e2da1668-d489-42e8-9b92-25c2680b7349"
       }
     }
   }
